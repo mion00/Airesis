@@ -14,7 +14,7 @@
                 <div class="notvoteddown-mini" style="margin-right:10px" title="<%= t('pages.proposals.show.votedown') %>"></div>
             <% end %>
         <% end %>
-        <span class="rightFloat" style="margin-right:3px"><%= comment.rankings.negatives.count %></span>
+        <span class="rightFloat" style="margin-right:3px; line-height:25px"><%= comment.rankings.negatives.count %></span>
         <% if my_rank == 2 %>
             <div class="votednil-mini" style="margin-right:10px" title="<%= t('pages.proposals.show.votenil') %>"></div>
         <% else %>
@@ -26,7 +26,7 @@
                 <div class="notvotednil-mini" style="margin-right:10px" title="<%= t('pages.proposals.show.votenil') %>"></div>
             <% end %>
         <% end %>
-        <span class="rightFloat" style="margin-right:3px"><%= comment.rankings.neutrals.count %></span>
+        <span class="rightFloat" style="margin-right:3px; line-height:25px"><%= comment.rankings.neutrals.count %></span>
         <% if my_rank == 1 %>
             <div class="votedup-mini" style="margin-right:10px" title="<%= t('pages.proposals.show.voteup') %>"></div>
         <% else %>
@@ -38,7 +38,7 @@
                 <div class="notvotedup-mini" style="margin-right:10px" title="<%= t('pages.proposals.show.voteup') %>"></div>
             <% end %>
         <% end %>
-        <span class="rightFloat" style="margin-right:3px"><%= comment.rankings.positives.count %></span>
+        <span class="rightFloat" style="margin-right:3px; line-height:25px"><%= comment.rankings.positives.count %></span>
         <% if can_rank_again %>
             <span class="rightFloat think"><%= t('pages.proposals.contribution_valuation_again') %></span>
         <% end %>

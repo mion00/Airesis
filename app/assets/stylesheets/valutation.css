@@ -28,92 +28,104 @@
 
 
 .notvotedup-mini {
-    background: url('/assets/faces/green_empty_16.png') 0 0 no-repeat;
-    width: 19px;
-    height: 18px;
+    background: url('/assets/faces/smiley-empty.png') 0 0 no-repeat;
+    background-size: 25px;
+    width: 25px;
+    height: 25px;
     float: right;
     display: inline-block;
 }
 
 .voteup-mini {
-    background: url('/assets/faces/green_empty_16.png') 0 0 no-repeat;
-    width: 19px;
-    height: 18px;
+    background: url('/assets/faces/smiley-empty.png') 0 0 no-repeat;
+    background-size: 25px;
+    width: 25px;
+    height: 25px;
     float: right;
     display: inline-block;
 }
 
 .voteup-mini:hover {
-	background: url('/assets/faces/green_full_16.png') 0 0 no-repeat;
+	background: url('/assets/faces/smiley-full.png') 0 0 no-repeat;
+    background-size: 25px;
 	
 }
 
 .votedup-mini {
-	background: url('/assets/faces/green_full_16.png') 0 0 no-repeat;
-	width: 19px;
-	height: 18px;
+    background: url('/assets/faces/smiley-full.png') 0 0 no-repeat;
+    background-size: 25px;
+    width: 25px;
+    height: 25px;
 	display: inline-block;
 	float: right;
 }
 
 /*pulsanti valutazione neutra contributo*/
 .notvotednil-mini {
-    background: url('/assets/faces/white_empty_16.png') 0 0 no-repeat;
-    width: 19px;
-    height: 18px;
+    background: url('/assets/faces/neutral-empty.png') 0 0 no-repeat;
+    background-size: 25px;
+    width: 25px;
+    height: 25px;
     float: right;
     display: inline-block;
     margin-right: 5px;
 }
 
 .votenil-mini {
-	background: url('/assets/faces/white_empty_16.png') 0 0 no-repeat;
-	width: 19px;
-	height: 18px;
+	background: url('/assets/faces/neutral-empty.png') 0 0 no-repeat;
+    background-size: 25px;
+	width: 25px;
+	height: 25px;
 	float: right;
 	display: inline-block;
 	margin-right: 5px;
 }
 
 .votenil-mini:hover {
-	background: url('/assets/faces/white_full_16.png') 0 0 no-repeat;
+	background: url('/assets/faces/neutral-full.png') 0 0 no-repeat;
+    background-size: 25px;
 	
 }
 
 .votednil-mini {
-	background: url('/assets/faces/white_full_16.png') 0 0 no-repeat;
-	width: 19px;
-	height: 18px;
+    background: url('/assets/faces/neutral-empty.png') 0 0 no-repeat;
+    background-size: 25px;
+    width: 25px;
+    height: 25px;
 	display: inline-block;
 	float: right;
 }
 
 /*pulsanti valutazione negativa contributo*/
 .notvoteddown-mini {
-    background: url('/assets/faces/red_empty_16.png') 0 0 no-repeat;
-    width: 19px;
-    height: 18px;
+    background: url('/assets/faces/sad-empty.png') 0 0 no-repeat;
+    background-size: 25px;
+    width: 25px;
+    height: 25px;
     float: right;
     display: inline-block;
     margin: 0 5px;
 }
 
 .votedown-mini {
-	background: url('/assets/faces/red_empty_16.png') 0 0 no-repeat;
-	width: 19px;
-	height: 18px;
+	background: url('/assets/faces/sad-empty.png') 0 0 no-repeat;
+    background-size: 25px;
+    width: 25px;
+    height: 25px;
 	float: right;
 	display: inline-block;
 }
 .votedown-mini:hover {
-	background: url('/assets/faces/red_full_16.png') 0 0 no-repeat;
+	background: url('/assets/faces/sad-full.png') 0 0 no-repeat;
+    background-size: 25px;
 }
 
 
 .voteddown-mini {
-	background: url('/assets/faces/red_full_16.png') 0 0 no-repeat;
-	width: 19px;
-	height: 18px;
+	background: url('/assets/faces/sad-full.png') 0 0 no-repeat;
+    background-size: 25px;
+    width: 25px;
+    height: 25px;
 	display: inline-block;
 	float: right;
 }
