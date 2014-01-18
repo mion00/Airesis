@@ -43,61 +43,62 @@ Airesis::Application.routes.draw do
   resources :best_quorums, :controller => 'quorums'
   resources :old_quorums, :controller => 'quorums'
 
-  resources :proposals do
-    collection do
-      get :endless_index
-      get :similar
-      get :tab_list
-    end
+  localized do
+    resources :proposals do
+      collection do
+        get :endless_index
+        get :similar
+        get :tab_list
+      end
+      resources :proposal_comments do
+        member do
+          put :rankup
+          put :ranknil
+          put :rankdown
+          get :show_all_replies
+          put :unintegrate
+          get :history
+        end
+        collection do
+          post :mark_noise
+          get :list
+          get :left_list
+          get :edit_list
+          post :report
+          get :noise
+          get :manage_noise
+        end
+      end
 
-    resources :proposal_comments do
+      resources :proposal_histories
+      resources :proposal_lives
+      resources :proposal_supports
+      resources :proposal_presentations
+
+      resources :blocked_proposal_alerts do
+        collection do
+          post :block
+          post :unlock
+        end
+      end
+
       member do
-        put :rankup
-        put :ranknil
-        put :rankdown
-        get :show_all_replies
-        put :unintegrate
-        get :history
+        get :rankup
+        get :rankdown
+        get :statistics
+        put :set_votation_date
+        post :available_author
+        get :available_authors_list
+        put :add_authors
+        get :vote_results
+        post :close_debate
+        put :regenerate
+        get :geocode
+        get :facebook_share
+        post :facebook_send_message
       end
-      collection do
-        post :mark_noise
-        get :list
-        get :left_list
-        get :edit_list
-        post :report
-        get :noise
-        get :manage_noise
-      end
-    end
-
-    resources :proposal_histories
-    resources :proposal_lives
-    resources :proposal_supports
-    resources :proposal_presentations
-
-    resources :blocked_proposal_alerts do
-      collection do
-        post :block
-        post :unlock
       end
     end
-
-    member do
-      get :rankup
-      get :rankdown
-      get :statistics
-      put :set_votation_date
-      post :available_author
-      get :available_authors_list
-      put :add_authors
-      get :vote_results
-      post :close_debate
-      put :regenerate
-      get :geocode
-      get :facebook_share
-      post :facebook_send_message
-    end
-  end
 
   resources :proposal_categories
 
@@ -378,153 +379,157 @@ Airesis::Application.routes.draw do
       end
     end
 
-    resources :groups do
-      member do
-        get :ask_for_partecipation
-        get :ask_for_follow
-        put :partecipation_request_confirm
-        put :partecipation_request_decline
-        get :edit_events
-        get :new_event
-        post :create_event
-        get :edit_permissions
-        get :edit_proposals
-        post :change_default_anonima
-        post :change_default_visible_outside
-        post :change_advanced_options
-        post :change_default_secret_vote
-        get :reload_storage_size
-        put :enable_areas
-        put :remove_post
-        get :permissions_list
-      end
+    localized do
+      resources :groups do
+        member do
+          get :ask_for_partecipation
+          get :ask_for_follow
+          put :partecipation_request_confirm
+          put :partecipation_request_decline
+          get :edit_events
+          get :new_event
+          post :create_event
+          get :edit_permissions
+          get :edit_proposals
+          post :change_default_anonima
+          post :change_default_visible_outside
+          post :change_advanced_options
+          post :change_default_secret_vote
+          get :reload_storage_size
+          put :enable_areas
+          put :remove_post
+          get :permissions_list
+        end
 
-      collection do
-        post :ask_for_multiple_follow
-        get :autocomplete
-      end
+        collection do
+          post :ask_for_multiple_follow
+          get :autocomplete
+        end
 
 
-      resources :forums, controller: 'frm/forums', :only => [:index, :show] do
-        resources :topics, controller: 'frm/topics' do
-          member do
-            get :subscribe
-            get :unsubscribe
+        resources :forums, controller: 'frm/forums', :only => [:index, :show] do
+          resources :topics, controller: 'frm/topics' do
+            member do
+              get :subscribe
+              get :unsubscribe
+            end
           end
+
+
+          resources :topics, controller: 'frm/topics', :only => [:new, :create, :index, :show, :destroy] do
+            resources :posts, controller: 'frm/posts'
+          end
+
+
         end
 
+        namespace :frm do
+          get 'forums/:forum_id/moderation', :to => "moderation#index", :as => :forum_moderator_tools
+          # For mass moderation of posts
+          put 'forums/:forum_id/moderate/posts', :to => "moderation#posts", :as => :forum_moderate_posts
+          # Moderation of a single topic
+          put 'forums/:forum_id/topics/:topic_id/moderate', :to => "moderation#topic", :as => :moderate_forum_topic
+          resources :categories, :only => [:index, :show]
+          namespace :admin do
+            root :to => "base#index"
+            resources :groups, as: 'frm_groups' do
+              resources :members do
+                collection do
+                  post :add
+                end
+              end
+            end
 
-        resources :topics, controller: 'frm/topics', :only => [:new, :create, :index, :show, :destroy] do
-          resources :posts, controller: 'frm/posts'
-        end
+            resources :forums do
+              resources :moderators
+            end
 
-
-      end
-
-      namespace :frm do
-        get 'forums/:forum_id/moderation', :to => "moderation#index", :as => :forum_moderator_tools
-        # For mass moderation of posts
-        put 'forums/:forum_id/moderate/posts', :to => "moderation#posts", :as => :forum_moderate_posts
-        # Moderation of a single topic
-        put 'forums/:forum_id/topics/:topic_id/moderate', :to => "moderation#topic", :as => :moderate_forum_topic
-        resources :categories, :only => [:index, :show]
-        namespace :admin do
-          root :to => "base#index"
-          resources :groups, as: 'frm_groups' do
-            resources :members do
-              collection do
-                post :add
+            resources :categories
+            resources :topics do
+              member do
+                put :toggle_hide
+                put :toggle_lock
+                put :toggle_pin
               end
             end
           end
+        end
 
-          resources :forums do
-            resources :moderators
+        get 'users/autocomplete', :to => "users#autocomplete", :as => "user_autocomplete"
+
+        resources :events do
+          resources :meeting_partecipations
+
+          member do
+            post :move
+            post :resize
+          end
+          collection do
+            get :list
+          end
+        end
+
+        resources :elections
+
+        resources :candidates
+
+        resources :group_partecipations do
+          collection do
+            post :send_email
+            post :destroy_all
+          end
+        end
+
+        resources :search_partecipants
+
+
+        resources :proposals do
+          collection do
+            get :search
+          end
+          member do
+            post :close_debate
+            put :regenerate
+            get :geocode
+          end
+        end
+
+
+        resources :quorums do
+          member do
+            post :change_status
+          end
+        end
+
+
+        resources :best_quorums, :controller => 'quorums'
+        resources :old_quorums, :controller => 'quorums'
+
+        resources :documents do
+          collection do
+            get :view
+          end
+        end
+
+        resources :group_areas do
+          collection do
+            put :change
+            get :manage
           end
 
-          resources :categories
-          resources :topics do
-            member do
-              put :toggle_hide
-              put :toggle_lock
-              put :toggle_pin
+          resources :area_roles do
+            collection do
+              put :change
+              put :change_permissions
             end
           end
         end
-      end
 
-      get 'users/autocomplete', :to => "users#autocomplete", :as => "user_autocomplete"
-
-      resources :events do
-        resources :meeting_partecipations
-
-        member do
-          post :move
-          post :resize
+        resources :blog_posts do
+          #match :tag, :on => :member
+          match :drafts, :on => :collection
+          resources :blog_comments
         end
-        collection do
-          get :list
-        end
-      end
-
-      resources :elections
-
-      resources :candidates
-
-      resources :group_partecipations do
-        collection do
-          post :send_email
-          post :destroy_all
-        end
-      end
-
-      resources :search_partecipants
-
-      resources :proposals do
-        collection do
-          get :search
-        end
-        member do
-          post :close_debate
-          put :regenerate
-          get :geocode
-        end
-      end
-
-      resources :quorums do
-        member do
-          post :change_status
-        end
-      end
-
-
-      resources :best_quorums, :controller => 'quorums'
-      resources :old_quorums, :controller => 'quorums'
-
-      resources :documents do
-        collection do
-          get :view
-        end
-      end
-
-      resources :group_areas do
-        collection do
-          put :change
-          get :manage
-        end
-
-        resources :area_roles do
-          collection do
-            put :change
-            put :change_permissions
-          end
-        end
-      end
-
-      resources :blog_posts do
-        #match :tag, :on => :member
-        match :drafts, :on => :collection
-        resources :blog_comments
       end
     end
 
