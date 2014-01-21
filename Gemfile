@@ -131,3 +131,5 @@ gem 'activerecord-postgres-array'
 
 gem 'crowdin-api'
 gem 'rubyzip'
+
+gem 'i18n-tasks'
