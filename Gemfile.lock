@@ -40,6 +40,19 @@ GIT
   specs:
     vote-schulze (0.2.0)
 
+GIT
+  remote: https://github.com/glebm/i18n-tasks.git
+  revision: 19621d7a7859534a3b88f4aec43ea461f4d357ac
+  specs:
+    i18n-tasks (0.2.18)
+      activesupport
+      easy_translate (>= 0.4.0)
+      erubis
+      highline
+      rake
+      term-ansicolor
+      terminal-table
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -170,14 +183,6 @@ GEM
       multi_xml (>= 0.5.2)
     httpauth (0.2.0)
     i18n (0.6.1)
-    i18n-tasks (0.2.18)
-      activesupport
-      easy_translate (>= 0.4.0)
-      erubis
-      highline
-      rake
-      term-ansicolor
-      terminal-table
     icalendar (1.5.0)
     image_size (1.1.5)
     journey (1.0.4)
@@ -434,7 +439,7 @@ DEPENDENCIES
   geocoder
   globalize (~> 3.0.0)
   httparty
-  i18n-tasks
+  i18n-tasks!
   icalendar
   jquery-rails (= 3.0.4)
   jquery-rjs!

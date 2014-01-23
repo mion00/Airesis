@@ -132,4 +132,4 @@ gem 'activerecord-postgres-array'
 gem 'crowdin-api'
 gem 'rubyzip'
 
-gem 'i18n-tasks'
+gem 'i18n-tasks', :git => "https://github.com/glebm/i18n-tasks.git", group: :development
