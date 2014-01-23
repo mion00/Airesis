@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20140116142959) do
+ActiveRecord::Schema.define(:version => 20140122204849) do
 
   create_table "action_abilitations", :force => true do |t|
     t.integer  "group_action_id"
@@ -75,6 +75,15 @@ ActiveRecord::Schema.define(:version => 20140116142959) do
   end
 
   add_index "available_authors", ["proposal_id", "user_id"], :name => "index_available_authors_on_proposal_id_and_user_id", :unique => true
+
+  create_table "badges", :force => true do |t|
+    t.string   "name"
+    t.integer  "kind_id"
+    t.integer  "points"
+    t.boolean  "default"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
 
   create_table "banned_emails", :force => true do |t|
     t.string   "email",      :limit => 200, :null => false
@@ -691,6 +700,19 @@ ActiveRecord::Schema.define(:version => 20140116142959) do
     t.string  "territory_type", :null => false
   end
 
+  create_table "kinds", :force => true do |t|
+    t.string   "name"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
+  create_table "levels", :force => true do |t|
+    t.integer  "badge_id"
+    t.integer  "user_id"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
+  end
+
   create_table "meeting_organizations", :force => true do |t|
     t.integer "group_id"
     t.integer "event_id"
@@ -782,6 +804,14 @@ ActiveRecord::Schema.define(:version => 20140116142959) do
     t.float   "latitude_center"
     t.float   "longitude_center"
     t.integer "zoom"
+  end
+
+  create_table "points", :force => true do |t|
+    t.integer  "user_id"
+    t.integer  "kind_id"
+    t.integer  "value"
+    t.datetime "created_at", :null => false
+    t.datetime "updated_at", :null => false
   end
 
   create_table "post_publishings", :force => true do |t|

@@ -152,6 +152,7 @@ GEM
       activerecord (>= 3.0, < 4.0)
     gemoji (1.5.0)
     geocoder (1.1.9)
+    gioco (1.1.1)
     globalize (3.0.4)
       activemodel (>= 3.0.0, < 4.0.0)
       activerecord (>= 3.0.0, < 4.0.0)
@@ -411,6 +412,7 @@ DEPENDENCIES
   friendly_id
   gemoji
   geocoder
+  gioco
   globalize (~> 3.0.0)
   httparty
   icalendar

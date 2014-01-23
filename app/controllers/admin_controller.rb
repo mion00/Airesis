@@ -218,5 +218,19 @@ class AdminController < ManagerController
     end
 
   end
-  
+
+
+  def badge
+    user = current_user
+    user.change_points({points: 2, kind: 1})
+    user.badges.each do  |b|
+      puts b.name
+    end
+    respond_to do |format|
+      format.html {
+        flash[:notice] = 'Bagdges!'
+        redirect_to admin_panel_path
+      }
+    end
+  end
 end
