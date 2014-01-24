@@ -3,19 +3,34 @@
 
 <% end %>
 
-<div id="quorum_panel_container">
+<%= link_to t('pages.groups.edit_quorums.add_quorum'), new_group_best_quorum_url(@group), :remote => true, :class => "btn blue newButton disable" %>
+<div id="quorum_panel_container" xmlns="http://www.w3.org/1999/html">
   <%= render :partial => 'groups/quorums_panel' %>
 </div>
 
-<%= link_to t('pages.groups.edit_quorums.add_quorum'), new_group_quorum_url(@group), :remote => true, :class => "btn blue newButton disable" %>
+<table>
+  <thead>
+  <tr>
+    <td colspan="2"><%= t('pages.groups.statistics.title', date: @group.statistic.updated_at)%></td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><%='Debate participants'%></td>
+      <td><%=@group.statistic.valutations.round(0)%> (<%= (@group.statistic.valutations*100 / @group.count_proposals_partecipants).round(0) %>%)</td>
+    </tr>
+    <tr>
+      <td><%='Debate maturity'%></td>
+      <td><%= @group.statistic.good_score.round(0) %>%</td>
+    </tr>
+    <tr>
+    <td><%='Votation participants'%></td>
+    <td><%=@group.statistic.vote_valutations.round(0)%> (<%= (@group.statistic.vote_valutations*100 / @group.count_voter_partecipants).round(0) %>%)</td>
+    </tr>
+  </tbody>
+</table>
 
-<div id="new_quorum_container" title="<%= t('pages.groups.edit_quorums.new_quorum.title') %>" style="display: none; font-size: 14px;">
-</div>
 
-<div id="edit_quorum_container" title="<%= t('pages.groups.edit_quorums.edit_quorum') %>" style="display: none; font-size: 14px;">
-</div>
-
-<br/>
 <h2><%= t('pages.groups.edit_quorums.configure_proposal_parameters') %></h2>
 <%= check_box :group, :default_anonima, :onclick => "return change_default_anonima(this);" %><%= t('pages.groups.edit_quorums.default_anonymous_proposal') %><br />
 <%= check_box :group, :default_visible_outside, :onclick => "return change_default_visible_outside(this);" %><%= t('pages.groups.edit_quorums.default_private_proposal') %><br />
@@ -62,49 +77,6 @@
             dataType: 'script',
             type: 'post'
         });
-    }
-
-    $(function () {
-
-        $('#addQuorum').click(function () {
-            $('#new_quorum').dialog({
-                width: 500,
-                height: 'auto',
-                modal: true,
-                resizable: false,
-                close: function (event, ui) {
-                    $('#new_quorum').dialog('destroy');
-                }
-            });
-        });
-
-        $('#quorum_table').dataTable({
-            "oLanguage": {
-                "sLengthMenu": "Mostra _MENU_ quorum per pagina",
-                "sSearch": "Cerca:",
-                "sZeroRecords": "Nessun quorum, spiacente..",
-                "sInfo": "Sto mostrando da _START_ a _END_ di _TOTAL_ quorum",
-                "sInfoEmpty": "Sto mostrando 0 quorum",
-                "sInfoFiltered": "(filtrati da un totale di _MAX_ quorum)",
-                "oPaginate": {
-                    "sPrevious": "Pagina precedente",
-                    "sNext": "Pagina successiva"
-                }
-            },
-            "aoColumns": [null, { "bSortable": false }]
-        });
-
-        $('#roles_table_wrapper label').css("font-weight", "normal").css("font-size", "12px");
-    });
-
-    function hideNewQuorumPanel() {
-        $('#new_quorum_container').dialog('destroy');
-        $('#new_quorum_container').empty();
-    }
-
-    function hideEditQuorumPanel() {
-        $('#edit_quorum_container').dialog('destroy');
-        $('#edit_quorum_container').empty();
     }
 
 </script>

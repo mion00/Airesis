@@ -23,21 +23,22 @@
             'breadCrumbListElementOpenLast': '<li><div class="last step_title">',
             'breadCrumbActiveClass': 'bread-crumb-active',
             'breadCrumbCompletedClass': 'bread-crumb-completed',
-            'breadCrumbPosition': 'before'
+            'breadCrumbPosition': 'before',
+            'clickableBreadCrumbs': false
         };
 
         if (options) {
             $.extend(settings, options);
         }
 
-        callback = callback || function () {
-        };
+        callback = callback || function () { };
 
-        function disablePrev(prevObj) {
+        function disablePrev(prevObj){
             if ($(prevObj).is(":button")) {
                 $(prevObj).attr('disabled', 'disabled');
+            } else {
+                $(prevObj).addClass(settings.disabledClass);
             }
-            $(prevObj).addClass(settings.disabledClass);
         }
 
         return this.each(function () {
@@ -51,20 +52,20 @@
             var root;
             var breadCrumbList;
 
-            if (settings.root === null) {
+            if(settings.root === null){
                 root = children.first();
-            } else {
+            }else{
                 root = $(settings.root);
             }
 
             /* Set up container class */
-            if (settings.containerClass != "") {
+            if(settings.containerClass != ""){
                 container.addClass(settings.containerClass);
             }
 
             /* Set up bread crumb menu */
             if (settings.breadCrumb) {
-                breadCrumbList = settings.breadCrumbListOpen
+                breadCrumbList = settings.breadCrumbListOpen;
 
                 breadCrumbElements = container.find(settings.breadCrumbElement);
                 breadCrumbElements.each(function (index) {
@@ -127,7 +128,6 @@
                 }
                 else if (keyCode == 13) {
                     prev.click();
-                    ù
                 }
             });
 
@@ -225,6 +225,53 @@
                 settings.prevCallback(prevSet);
             });
 
+            if(settings.breadCrumb && settings.clickableBreadCrumbs){
+                $('.' + settings.breadCrumbListClass).children().click(function(){
+                    var active = container.find(activeClassSelector);
+                    var current = $(settings.element).eq($(this).index());
+
+                    var prevSet = current.prev(settings.element);
+                    var nextSet = current.next(settings.element);
+
+                    $(active).toggleClass(settings.activeClass);
+                    current.toggleClass(settings.activeClass);
+
+
+                    /* Get the current element's position and store it */
+                    active.data('posiiton', active.css('position'));
+
+                    /* Set our callback function */
+                    insertedNextCallback = function () { active.css('position', active.data('posiiton')); };
+
+                    /* Call show and hide with the user provided arguments */
+                    active.css('position', 'absolute').hide.apply(active, settings.nextArgs);
+                    current.parents().show.apply(current, settings.prevArgs);
+
+                    breadCrumbList.find('.' + settings.breadCrumbActiveClass).removeClass(settings.breadCrumbActiveClass);
+                    $(this).addClass(settings.breadCrumbActiveClass);
+
+                    if(prevSet.length){
+                        $(next).show();
+                        submitButton.hide();
+                    }
+
+                    if ($(prev).is(":button")) {
+                        $(prev).removeAttr('disabled');
+                    } else {
+                        /* If it's anything else, remove the disabled class */
+                        $(prev).removeClass(settings.disabledClass);
+                    }
+
+                    if (prevSet.length <= 0) {
+                        disablePrev(prev);
+                    }
+
+                    if (nextSet.length <= 0) {
+                        $(next).hide();
+                        submitButton.show();
+                    }
+                });
+            }
             callback.call(this);
 
         });

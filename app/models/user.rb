@@ -247,7 +247,7 @@ class User < ActiveRecord::Base
         elsif fdata['provider'] == Authentication::FACEBOOK #do nothing
         elsif fdata['provider'] == Authentication::PARMA #do nothing
         end
-      elsif data == session[:user] #what does it do? can't remember
+      elsif data = session[:user] #what does it do? can't remember
         user.email = session[:user][:email]
         user.login = session[:user][:email]
         if invite = session[:invite] #if is by invitation
@@ -359,14 +359,15 @@ class User < ActiveRecord::Base
   end
 
   #restituisce true se l'utente ha valutato un contributo
-  #ma è stato successivamente inserito un commento e può quindi valutarlo di nuovo
+  #ma è stato successivamente inserito un commento e può quindi valutarlo di nuovo oppure il contributo è stato modificato
   def can_rank_again_comment?(comment)
     #return false unless comment.proposal.in_valutation? #can't change opinion if not in valutation anymore
     ranking = ProposalCommentRanking.find_by_user_id_and_proposal_comment_id(self.id, comment.id)
-    return true unless ranking
+    return true unless ranking #si, se non l'ho mai valutato
+    return true if ranking.updated_at < comment.updated_at #si, se è stato aggiornato dopo la mia valutazione
     last_suggest = comment.replies.first(:order => 'created_at desc')
-    return false unless last_suggest
-    ranking.updated_at < last_suggest.created_at
+    return false unless last_suggest #no, se non vi è alcun commento
+    ranking.updated_at < last_suggest.created_at #si, se vi sono commenti dopo la mia valutazione
   end
 
 
@@ -657,15 +658,17 @@ class User < ActiveRecord::Base
     else #crea un nuovo account parma
 
       user = User.new(:name => data['first_name'].capitalize, :surname => data['last_name'].capitalize, :password => Devise.friendly_token[0, 20], :email => data['email'])
+      group = Group.find_by_subdomain('parma')
+      user.group_partecipation_requests.build(:group => group, :group_partecipation_request_status_id => GroupPartecipationRequestStatus::ACCEPTED)
+      partecipation_role = group.default_role
       if data['verified']
-        #certification = user.build_certification({name: user.name, surname: user.surname, tax_code: user.email})
-        group = Group.find_by_subdomain('parma')
-        user.group_partecipation_requests.build(:group => group, :group_partecipation_request_status_id => 3)
-        user.group_partecipations.build(:group => group, :partecipation_role_id => group.partecipation_role_id)
+        certification = user.build_certification({name: user.name, surname: user.surname, tax_code: user.email})
+        partecipation_role = PartecipationRole.where(['group_id = ? and lower(name) = ?',group.id, 'residente']).first || partecipation_role  #look for best role or fallback
         user.user_type_id = UserType::CERTIFIED
       else
         user.user_type_id = UserType::AUTHENTICATED
       end
+      user.group_partecipations.build(:group => group, :partecipation_role_id => partecipation_role.id)
 
       user.sign_in_count = 0
       user.build_authentication_provider(access_token)
@@ -679,6 +682,4 @@ class User < ActiveRecord::Base
       return user
     end
   end
-
-
 end

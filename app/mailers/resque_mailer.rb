@@ -1,13 +1,25 @@
 #encoding: utf-8
 class ResqueMailer < ActionMailer::Base
   include Resque::Mailer
-  helper ProposalsHelper
+  helper ProposalsHelper, EmailHelper, GroupsHelper
   default from: "Airesis <info@airesis.it>"
 
   layout :choose_layout
 
   #specific templates for notification types
-  TEMPLATES = { 5 => 'new_contribute', 1 => 'new_contribute', 2 => 'text_update', NotificationType::UNINTEGRATED_CONTRIBUTE => 'unintegrated_contribute', NotificationType::NEW_BLOG_COMMENT => 'new_blog_comment'}
+  TEMPLATES = {
+                1 => 'new_contribute',
+                2 => 'text_update',
+                3 => 'new_proposal',
+                5 => 'new_contribute',
+                10 => 'new_proposal',
+                NotificationType::NEW_PUBLIC_EVENTS => 'notifications/new_event',
+                NotificationType::NEW_EVENTS => 'notifications/new_event',
+                NotificationType::AVAILABLE_AUTHOR => 'notifications/available_author',
+                NotificationType::UNINTEGRATED_CONTRIBUTE => 'unintegrated_contribute',
+                NotificationType::NEW_BLOG_COMMENT => 'new_blog_comment',
+                NotificationType::CONTRIBUTE_UPDATE => 'notifications/update_contribute'
+              }
   
   def notification(alert_id)
     @alert = UserAlert.find(alert_id)
@@ -69,6 +81,7 @@ class ResqueMailer < ActionMailer::Base
 
   def publish(params)
     @user = User.find_by_id(params['user_id'])
+    I18n.locale = @user.locale.key || 'en'
     mail_fields = {
       subject: params['subject'],
       to: @user.email
@@ -103,6 +116,6 @@ class ResqueMailer < ActionMailer::Base
   protected
 
   def choose_layout
-    (['invite','admin_message','feedback'].include? action_name) ? 'maktoub/unregistered_mailer' : 'maktoub/newsletter_mailer'
+    (['invite','admin_message','feedback'].include? action_name) ? 'maktoub/unregistered_mailer' : (['notification'].include? action_name) ? 'maktoub/notification_mailer' : 'maktoub/newsletter_mailer'
   end
 end

@@ -17,7 +17,9 @@ class HomeController < ApplicationController
   before_filter :initialize_roadmap, :only => [:bugtracking]
 
   def index
-    redirect_to home_url if current_user
+    if current_user
+      render 'open_space'
+    end
   end
 
   def videoguide
@@ -94,8 +96,13 @@ class HomeController < ApplicationController
         feedback = JSON.parse(params[:data])
         data = feedback[1][22..-1] if feedback[1]#get the feedback image data
 
-
-        feedback = SentFeedback.new(message: feedback[0]['message'])
+        stack  = ""
+        if current_user
+          stack << "user id: #{current_user.id}\n"
+          stack << "user email: #{current_user.email}\n"
+          stack << "current url: #{session[:user_return_to]}\n"
+        end
+        feedback = SentFeedback.new(message: feedback[0]['message'], stack: stack)
 
         feedback.email = current_user.email if current_user #save user email if is logged in
 
@@ -127,7 +134,7 @@ class HomeController < ApplicationController
 
   def choose_layout
     if ['index'].include? action_name
-      nil
+      current_user ? 'open_space' : nil
     elsif ['show'].include? action_name
       'users'
     else

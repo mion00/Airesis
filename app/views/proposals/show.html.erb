@@ -10,7 +10,6 @@
     <meta property="article:section" content="<%= @proposal.category.description %>">
     <meta name="description" content="<%= @proposal.subtitle %>">
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=<%= MAPS_API_KEY %>&sensor=false"></script>
-
 <% end %>
 
 <% if current_user %>
@@ -18,8 +17,6 @@
 <% end %>
 <% @page_title = @proposal.title %>
 <script type="text/javascript">
-
-
     var nicknames = <%=raw @proposal.is_anonima? ? @proposal.proposal_nicknames.collect{|n|{name: n.nickname, id: n.id, avatar: n.avatar(16), type: 'nickname'}}.to_json.gsub('"','\'') : [] %>;
 
     $(function () {
@@ -51,16 +48,17 @@
 
 <% if ((can? :partecipate, @proposal) || (!current_user && !@proposal.private)) && (!@proposal.voting?) %>
     <div id="proposalNewComment" class="blogNewComment">
-    <%= render :partial => @proposal_comment = ProposalComment.new %>
+      <%= render :partial => @proposal_comment = ProposalComment.new %>
     </div>
-    <div id="flash_messages_comments" style="height:20px"></div>
 <% else %>
     <div style="height:20px"></div>
 <% end %>
 
 
 <% if @proposal.voting? %>
+    <%unless @proposal.is_petition? %>
     <h4><%= t('pages.proposals.show.no_contributes') %></h4>
+    <%end%>
 <% else %>
     <div id="order_bar">
       <%= render :partial => 'proposal_comments/order_bar' %>
@@ -131,6 +129,40 @@
         return false;
     }
 
+
+    function edit_contribute(id) {
+        $('.report_menu').hide();
+        $('.report_contribute.visible').removeClass('visible');
+        $('.report_contribute').addClass('invisible');
+        $.ajax({
+            dataType: 'script',
+            type: 'get',
+            url: '/proposals/<%=@proposal.id%>/proposal_comments/' + id + '/edit'
+        });
+        return false;
+    }
+
+    function history_contribute(id) {
+        $('.report_menu').hide();
+        $('.report_contribute.visible').removeClass('visible');
+        $.ajax({
+            dataType: 'script',
+            type: 'get',
+            url: '/proposals/<%=@proposal.id%>/proposal_comments/' + id + '/history'
+        });
+        return false;
+    }
+
+    function cancel_edit_comment(id) {
+        if (confirm('Are you sure?')) {
+            $('.proposalComment[data-id='+id+'] .edit_panel').fadeOut(function() {
+                $(this).remove();
+                $('.proposalComment[data-id='+id+'] .baloon-content').fadeIn();
+            });
+            $('.report_contribute.invisible').removeClass('invisible');
+        }
+    }
+
     var retval = false;
     function hideAndDeleteReply(event, id) {
         if (!retval) {
@@ -157,7 +189,7 @@
         $('.report_contribute.visible').removeClass('visible');
         $('#report_contribute_id').val(id);
         $('input[name=reason]').removeAttr('checked');
-        doModal($('#report_contribute'));
+        $('#report_contribute').foundation('reveal','open');
     }
 
     function hide_vote_controls() {
@@ -317,7 +349,7 @@
 
                 $.ajax({ url: '<%=left_list_proposal_proposal_comments_url(@proposal) %>',
                     data: {
-                        comment_id: comment_id,                                   section_id: section_id,
+                        comment_id: comment_id, section_id: section_id,
                         disable_limit: true,
                         view: <%=current_user ? 1 : 3 %>
                     },
@@ -325,7 +357,7 @@
                     complete: function () {
                         $(".loading", fetched).hide();
                     },
-                    error: function(xhr, ajaxOptions, thrownError) {
+                    error: function (xhr, ajaxOptions, thrownError) {
                         $(".loading", fetched).hide();
                         if (xhr.status == '404') {
                             $(fetched).html('<%=t('pages.proposals.show.error_loading_paragraph')%>');
@@ -354,6 +386,10 @@
         //open the contribute if it's a link from an email
         <%if params[:section_id] %>
         $('.contributeButton[data-section_id=<%=params[:section_id]%>]').trigger('click', [<%=params[:comment_id]%>]);
+        <%end%>
+
+        <%if params[:share] %>
+            $('#promote_proposal').click();
         <%end%>
 
     });

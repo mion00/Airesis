@@ -4,7 +4,7 @@ class ProposalCommentsController < ApplicationController
   #carica la proposta
   before_filter :load_proposal
   #carica il commento
-  before_filter :load_proposal_comment, :only => [:show, :edit, :update, :rankup, :rankdown, :ranknil, :destroy, :report, :unintegrate]
+  before_filter :load_proposal_comment, :only => [:show, :edit, :history, :update, :rankup, :rankdown, :ranknil, :destroy, :report, :unintegrate]
 
 ###SICUREZZA###
 
@@ -68,7 +68,7 @@ class ProposalCommentsController < ApplicationController
       if params[:view] == SearchProposal::ORDER_BY_RANK
         order << " proposal_comments.j_value desc, proposal_comments.id desc"
       else
-        order << "proposal_comments.created_at desc"
+        order << "proposal_comments.updated_at desc"
       end
       @proposal_comments = @proposal.contributes.listable.where(conditions).order(order).page(params[:page]).per(COMMENTS_PER_PAGE)
       @total_pages = @proposal_comments.total_pages
@@ -102,10 +102,14 @@ class ProposalCommentsController < ApplicationController
     end
   end
 
+  def history
+
+  end
+
   #mostra tutti i commenti dati ad un contributo
   def show_all_replies
     @proposal_comment = ProposalComment.find_by_id(params[:id])
-    @replies = ProposalComment.where('parent_proposal_comment_id=?', params[:id]).order('created_at ASC')[0..-6]
+    @replies = ProposalComment.where('parent_proposal_comment_id=?', params[:id]).order('created_at ASC')[0..-(params[:showed].to_i+1)]
   end
 
   def new
@@ -132,6 +136,7 @@ class ProposalCommentsController < ApplicationController
       @my_nickname = current_user.proposal_nicknames.find_by_proposal_id(@proposal.id)
       @proposal_comment.collapsed = true
       format.js
+      format.json { head :ok }
       format.html { redirect_to @proposal }
     end
 
@@ -145,10 +150,13 @@ class ProposalCommentsController < ApplicationController
         if @is_reply
           page.replace_html parent_id.to_s + "_reply_area_msg", :partial => 'layouts/flash', :locals => {:flash => flash}
         else
-          page.replace_html "flash_messages_comments", :partial => 'layouts/flash', :locals => {:flash => flash}
+          page.replace_html "flash_messages", :partial => 'layouts/flash', :locals => {:flash => flash}
           #page.replace "proposalNewComment", :partial => 'proposal_comments/proposal_comment', :locals => {:proposal_comment => @proposal_comment}
         end
       end
+      }
+      format.json {
+        render :json => @proposal_comment.try(:errors) || {error: true}, :status => :unprocessable_entity
       }
     end
   end
@@ -156,14 +164,25 @@ class ProposalCommentsController < ApplicationController
 
   def update
     respond_to do |format|
-      if @proposal_comment.update_attributes(params[:proposal_comment])
-        flash[:notice] = t('info.proposal.updated_comment')
-        format.html { redirect_to(@proposal) }
+      @proposal_comment.content = params[:proposal_comment][:content]
+      if @proposal_comment.content_changed?
+        if @proposal_comment.save
+          Resque.enqueue_in(1, NotificationProposalCommentUpdate, @proposal_comment.id)
+          flash[:notice] = t('info.proposal.updated_comment')
+          format.js
+          format.xml { head :ok }
+          format.html { redirect_to(@proposal) }
+
+        else
+          format.xml { render :xml => @proposal_comment.errors, :status => :unprocessable_entity }
+          format.html { render :action => "edit" }
+        end
+      else #content has not changed
+        format.js
         format.xml { head :ok }
-      else
-        format.html { render :action => "edit" }
-        format.xml { render :xml => @proposal_comment.errors, :status => :unprocessable_entity }
+        format.html { redirect_to(@proposal) }
       end
+
     end
   end
 

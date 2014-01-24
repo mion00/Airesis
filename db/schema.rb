@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131207134053) do
+ActiveRecord::Schema.define(:version => 20140122162713) do
 
   create_table "action_abilitations", :force => true do |t|
     t.integer  "group_action_id"
@@ -602,6 +602,16 @@ ActiveRecord::Schema.define(:version => 20131207134053) do
   add_index "group_quorums", ["quorum_id", "group_id"], :name => "index_group_quorums_on_quorum_id_and_group_id", :unique => true
   add_index "group_quorums", ["quorum_id"], :name => "index_group_quorums_on_quorum_id", :unique => true
 
+  create_table "group_statistics", :force => true do |t|
+    t.integer  "group_id",         :null => false
+    t.float    "good_score"
+    t.float    "vote_good_score"
+    t.float    "valutations"
+    t.float    "vote_valutations"
+    t.datetime "created_at",       :null => false
+    t.datetime "updated_at",       :null => false
+  end
+
   create_table "group_tags", :force => true do |t|
     t.datetime "created_at", :null => false
     t.datetime "updated_at", :null => false
@@ -654,6 +664,7 @@ ActiveRecord::Schema.define(:version => 20131207134053) do
     t.string   "slug"
     t.boolean  "disable_partecipation_requests",                  :default => false
     t.boolean  "disable_forums",                                  :default => false
+    t.boolean  "disable_documents",                               :default => false
   end
 
   add_index "groups", ["slug"], :name => "index_groups_on_slug"
@@ -821,6 +832,17 @@ ActiveRecord::Schema.define(:version => 20131207134053) do
   end
 
   add_index "proposal_comment_reports", ["proposal_comment_id", "user_id"], :name => "reports_index", :unique => true
+
+  create_table "proposal_comment_versions", :force => true do |t|
+    t.string   "item_type",  :null => false
+    t.integer  "item_id",    :null => false
+    t.string   "event",      :null => false
+    t.string   "whodunnit"
+    t.text     "object"
+    t.datetime "created_at"
+  end
+
+  add_index "proposal_comment_versions", ["item_type", "item_id"], :name => "index_proposal_comment_versions_on_item_type_and_item_id"
 
   create_table "proposal_comments", :force => true do |t|
     t.integer  "parent_proposal_comment_id"
@@ -1002,6 +1024,7 @@ ActiveRecord::Schema.define(:version => 20131207134053) do
     t.datetime "vote_starts_at"
     t.datetime "vote_ends_at"
     t.integer  "vote_event_id"
+    t.integer  "signatures"
   end
 
   add_index "proposals", ["proposal_category_id"], :name => "_idx_proposals_proposal_category_id"
@@ -1032,22 +1055,39 @@ ActiveRecord::Schema.define(:version => 20131207134053) do
   add_index "provincias", ["stato_id"], :name => "index_provincias_on_stato_id"
 
   create_table "quorums", :force => true do |t|
-    t.string   "name",        :limit => 100,                     :null => false
-    t.string   "description", :limit => 4000
+    t.string   "name",              :limit => 100,                     :null => false
+    t.string   "description",       :limit => 4000
     t.integer  "percentage"
     t.integer  "valutations"
     t.integer  "minutes"
-    t.string   "condition",   :limit => 5
-    t.integer  "bad_score",                                      :null => false
-    t.integer  "good_score",                                     :null => false
-    t.boolean  "active",                      :default => true,  :null => false
-    t.boolean  "public",                      :default => false, :null => false
+    t.string   "condition",         :limit => 5
+    t.integer  "bad_score",                                            :null => false
+    t.integer  "good_score",                                           :null => false
+    t.boolean  "active",                            :default => true,  :null => false
+    t.boolean  "public",                            :default => false, :null => false
     t.datetime "created_at"
     t.datetime "updated_at"
     t.datetime "started_at"
     t.datetime "ends_at"
     t.integer  "seq"
     t.integer  "quorum_id"
+    t.integer  "vote_minutes"
+    t.integer  "vote_percentage"
+    t.integer  "vote_valutations"
+    t.integer  "vote_good_score"
+    t.datetime "vote_start_at"
+    t.datetime "vote_ends_at"
+    t.string   "t_percentage",      :limit => 1
+    t.string   "t_minutes",         :limit => 1
+    t.string   "t_good_score",      :limit => 1
+    t.string   "t_vote_percentage", :limit => 1
+    t.string   "t_vote_minutes",    :limit => 1
+    t.string   "t_vote_good_score", :limit => 1
+    t.string   "type"
+    t.boolean  "removed",                           :default => false
+    t.integer  "old_bad_score"
+    t.string   "old_condition",     :limit => 5
+    t.boolean  "assigned",                          :default => false
   end
 
   create_table "ranking_types", :force => true do |t|
@@ -1156,6 +1196,7 @@ ActiveRecord::Schema.define(:version => 20131207134053) do
     t.datetime "image_updated_at"
     t.text     "message"
     t.string   "email"
+    t.text     "stack"
   end
 
   create_table "simple_votes", :force => true do |t|
@@ -1304,7 +1345,6 @@ ActiveRecord::Schema.define(:version => 20131207134053) do
 
   create_table "sys_payment_notifications", :force => true do |t|
     t.text     "params"
-    t.integer  "sys_feature_id"
     t.string   "status"
     t.string   "transaction_id"
     t.datetime "created_at",                     :null => false
@@ -1313,6 +1353,8 @@ ActiveRecord::Schema.define(:version => 20131207134053) do
     t.decimal  "payment_gross"
     t.string   "first_name",     :limit => 4000
     t.string   "last_name",      :limit => 4000
+    t.integer  "payable_id"
+    t.string   "payable_type"
   end
 
   add_index "sys_payment_notifications", ["transaction_id"], :name => "index_sys_payment_notifications_on_transaction_id", :unique => true
@@ -1442,6 +1484,7 @@ ActiveRecord::Schema.define(:version => 20131207134053) do
     t.integer  "vote_type_id"
     t.string   "vote_schulze"
     t.string   "vote_schulze_desc", :limit => 2000
+    t.text     "comment"
   end
 
   add_index "user_votes", ["proposal_id", "user_id"], :name => "onlyvoteuser", :unique => true
@@ -1458,7 +1501,6 @@ ActiveRecord::Schema.define(:version => 20131207134053) do
     t.datetime "updated_at"
     t.string   "login",                     :limit => 40
     t.string   "password_salt",             :limit => 40
-    t.string   "remember_token",            :limit => 40
     t.datetime "remember_token_expires_at"
     t.string   "confirmation_token"
     t.datetime "confirmed_at"
@@ -1751,8 +1793,6 @@ ActiveRecord::Schema.define(:version => 20131207134053) do
   add_foreign_key "sys_movements", "sys_currencies", name: "sys_movements_sys_currency_id_fk"
   add_foreign_key "sys_movements", "sys_movement_types", name: "sys_movements_sys_movement_type_id_fk"
   add_foreign_key "sys_movements", "users", name: "sys_movements_user_id_fk"
-
-  add_foreign_key "sys_payment_notifications", "sys_features", name: "sys_payment_notifications_sys_feature_id_fk"
 
   add_foreign_key "tutorial_assignees", "tutorials", name: "tutorial_assignees_tutorial_id_fk"
   add_foreign_key "tutorial_assignees", "users", name: "tutorial_assignees_user_id_fk"

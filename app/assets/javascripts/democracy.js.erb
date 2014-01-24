@@ -25,6 +25,7 @@ function scrollToElement(element) {
     return false;
 }
 
+var cards_delay = 0;
 
 $(function () {
     ClientSideValidations.selectors.validate_inputs += ', .select2-container:visible ~ :input:enabled[data-validate]';
@@ -97,8 +98,27 @@ $(function () {
 
     mybox_animate();
 
+
+    $(document.body).on('appear', '.card.appear', function(e, $affected) {
+        cards_delay = 0;
+        $(this).addClass('appeared');
+        /*$affected.each(function() {
+            var $this_ = $(this);
+            console.log('appear in ' + cards_delay);
+            setTimeout(function() {$this_.addClass("appeared")},cards_delay);
+            cards_delay += 300;
+        });*/
+        cards_delay = 0;
+    });
+
+    $('.card.appear').appear({force_process: true});
+
 });
 
+function show_cards() {
+    cards_delay = 0;
+    $('.card.appear').appear({force_process: true});
+}
 
 function mybox_animate() {
     $(".mybox .mybox_button").click(function () {
@@ -233,7 +253,8 @@ function disegnaProgressBar() {
     $('.timeline .cur').qtip({
         position: {
             at: 'bottom center',
-            my: 'top center'
+            my: 'top center',
+            viewport: $(window)
         },
         style: {
             classes: 'qtip-light qtip-shadow',
@@ -306,6 +327,15 @@ function disegnaProgressBar() {
                     height: 5
                 }
             }
+        });
+    });
+
+    $(function () {
+        $(".progress_bar").progressBar({
+            boxImage: '<%=asset_path "progressbar.gif"%>',
+            barImage: '<%=asset_path "progressbg_green.gif"%>',
+            showText: true,
+            textFormat: 'custom'
         });
     });
 }
@@ -560,28 +590,6 @@ function array1dToJson(a, p) {
     return s;
 }
 
-
-function doModal(el) {
-    el.modal({
-        opacity: 60,
-        overlayCss: {
-            backgroundColor: "#dddddd"
-        },
-        minWidth: '400px',
-        minHeight: '200px',
-        transient: 'true',
-        persist: 'true',
-        onShow: function (dialog) {
-            dialog.data.prepend('<div id="error_updating"></div>');
-        },
-        onClose: function (dialog) {
-            $('#error_updating').remove();
-            $.modal.close();
-        }
-    });
-}
-
-
 function stripScripts(s) {
     var div = document.createElement('div');
     div.innerHTML = s;
@@ -701,6 +709,13 @@ function secondsToString(seconds) {
     return str;
 }
 
+function getQueryParam(param) {
+    var result =  window.location.search.match(
+            new RegExp("(\\?|&)" + param + "(\\[\\])?=([^&]*)")
+    );
+
+    return result ? result[3] : false;
+}
 
 function addQueryParam(url, key, val) {
     var parts = url.match(/([^?#]+)(\?[^#]*)?(\#.*)?/);

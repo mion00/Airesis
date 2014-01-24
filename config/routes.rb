@@ -32,12 +32,16 @@ Airesis::Application.routes.draw do
 
   #common routes both for main app and subdomains
 
+
   resources :quorums do
     collection do
       get :dates
       get :help
     end
   end
+
+  resources :best_quorums, :controller => 'quorums'
+  resources :old_quorums, :controller => 'quorums'
 
   resources :proposals do
     collection do
@@ -51,8 +55,9 @@ Airesis::Application.routes.draw do
         put :rankup
         put :ranknil
         put :rankdown
-        post :show_all_replies
+        get :show_all_replies
         put :unintegrate
+        get :history
       end
       collection do
         post :mark_noise
@@ -90,18 +95,24 @@ Airesis::Application.routes.draw do
       put :regenerate
       get :geocode
       get :facebook_share
+      get :promote
       post :facebook_send_message
+      get :banner
+      get :test_banner
     end
   end
 
   resources :proposal_categories
 
   resources :blogs do
+
     resources :blog_posts do
       #match :tag, :on => :member
       match :drafts, :on => :collection
+
       resources :blog_comments
     end
+    match '/:year/:month' => 'blogs#by_year_and_month', :as=> :posts_by_year_and_month, on: :member
   end
 
   resources :announcements do
@@ -227,6 +238,10 @@ Airesis::Application.routes.draw do
         post :change_status
       end
     end
+
+
+    resources :best_quorums, :controller => 'quorums'
+    resources :old_quorums, :controller => 'quorums'
 
     resources :documents do
       collection do
@@ -484,6 +499,10 @@ Airesis::Application.routes.draw do
           post :change_status
         end
       end
+
+
+      resources :best_quorums, :controller => 'quorums'
+      resources :old_quorums, :controller => 'quorums'
 
       resources :documents do
         collection do

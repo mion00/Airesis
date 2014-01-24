@@ -12,7 +12,7 @@ class ProposalsController < ApplicationController
   layout :choose_layout
   #carica la proposta
   before_filter :load_proposal, :only => [:vote_results]
-  before_filter :load_proposal_and_group, :except => [:search, :index, :tab_list, :endless_index, :new, :create, :similar, :vote_results]
+  before_filter :load_proposal_and_group, :except => [:index, :tab_list, :endless_index, :new, :create, :similar, :vote_results]
 
   ###SICUREZZA###
 
@@ -45,12 +45,12 @@ class ProposalsController < ApplicationController
       authorize! :view_data, @group
 
       unless can? :view_proposal, @group
-        flash.now[:warn] = "Non hai i permessi per visualizzare le proposte private. Contatta gli amministratori del gruppo."
+        flash.now[:warn] = "Non hai i permessi per visualizzare le proposte private. Contatta gli amministratori del gruppo." #TODO:I18n
       end
 
       if params[:group_area_id]
         unless can? :view_proposal, @group_area
-          flash.now[:warn] = "Non hai i permessi per visualizzare le proposte private. Contatta gli amministratori del gruppo."
+          flash.now[:warn] = "Non hai i permessi per visualizzare le proposte private. Contatta gli amministratori del gruppo." #TODO:I18n
         end
       end
     end
@@ -111,14 +111,9 @@ class ProposalsController < ApplicationController
     query_index
     respond_to do |format|
       format.html {
-        if params[:replace]
-          render :update do |page|
-            page.replace_html params[:replace_id], :partial => 'tab_list', :locals => {:proposals => @proposals}
-          end
-        else
-          render :partial => 'tab_list', :locals => {:proposals => @proposals}
-        end
+        render :partial => 'tab_list', :locals => {:proposals => @proposals}
       }
+      format.js
       format.json
     end
   end
@@ -127,6 +122,30 @@ class ProposalsController < ApplicationController
     query_index
     respond_to do |format|
       format.js
+    end
+  end
+
+  def banner
+    @proposal = Proposal.find(params[:id])
+
+    if @proposal.is_petition?
+      respond_to do |format|
+        format.js
+        format.html {render 'banner', layout: false}
+      end
+    else
+      render nothing: true, status: 404
+    end
+  end
+
+  def test_banner
+    @proposal = Proposal.find(params[:id])
+    if @proposal.is_petition?
+      respond_to do |format|
+        format.html
+      end
+    else
+      render nothing: true, status: 404
     end
   end
 
@@ -244,8 +263,8 @@ class ProposalsController < ApplicationController
       log_error(e)
       respond_to do |format|
         format.js { render :update do |page|
-          page.alert "Devono passare 2 minuti tra una proposta e l\'altra\nAttendi ancora #{((PROPOSALS_TIME_LIMIT - elapsed)/60).floor} minuti e #{((PROPOSALS_TIME_LIMIT - elapsed)%60).round(0)} secondi."
-          page << "$('#create_proposal_container').dialog('destroy');"
+          page.alert t('pages.proposals.new.wait', minutes: ((PROPOSALS_TIME_LIMIT - elapsed)/60).floor, seconds: ((PROPOSALS_TIME_LIMIT - elapsed)%60).round(0))
+          page << "$('#create_proposal_container').foundation('reveal','close');"
         end }
       end
     end
@@ -291,45 +310,44 @@ class ProposalsController < ApplicationController
             @proposal.topic_proposals.build(:topic_id => @topic.id, :user_id => current_user.id)
           end
         else
-          @proposal.anonima = DEFAULT_ANONIMA
+          @proposal.anonima = @proposal.is_petition? ? false : DEFAULT_ANONIMA
           @proposal.visible_outside = true
           @proposal.secret_vote = true
         end
 
-        #il quorum viene utilizzato per le proposte standard
+        #we don't use quorum for petitions
         # if params[:proposal][:proposal_type_id] == ProposalType::STANDARD.to_s
-        quorum = assign_quorum(prparams)
-
-        #metto la proposta in valutazione se è standard
-        @proposal.proposal_state_id = PROP_VALUT
-        @proposal.rank = 0
-
-
-        #elsif params[:proposal][:proposal_type_id] == ProposalType::POLL.to_s
-        #   @proposal.proposal_state_id = ProposalState::WAIT_DATE
-        # end
+        if @proposal.is_petition?
+          @proposal.proposal_state_id = @proposal.petition_phase == 'signatures' ? ProposalState::VOTING : ProposalState::VALUTATION
+          @proposal.build_vote(:positive => 0, :negative => 0, :neutral => 0)
+        else
+          quorum = assign_quorum(prparams)
+          @proposal.proposal_state_id = ProposalState::VALUTATION
+          @proposal.rank = 0
+        end
 
 
         borders = prparams[:interest_borders_tkn]
         update_borders(borders)
 
 
-        @proposal.update_attribute(:url, @proposal.private? ? group_proposal_path(@group, @proposal) : proposal_path(@proposal))
+        #@proposal.update_attribute(:url, @proposal.private? ? group_proposal_path(@group, @proposal) : proposal_path(@proposal))
 
 
         @proposal.save!
 
+        unless @proposal.is_petition?
+          #if the time is fixed we schedule notifications 24h and 1h before the end of debate
+          if @copy.time_fixed?
+            Resque.enqueue_at(@copy.ends_at - 24.hours, ProposalsWorker, {:action => ProposalsWorker::LEFT24, :proposal_id => @proposal.id}) if @copy.minutes > 1440
+            Resque.enqueue_at(@copy.ends_at - 1.hour, ProposalsWorker, {:action => ProposalsWorker::LEFT1, :proposal_id => @proposal.id}) if @copy.minutes > 60
+          end
 
-        #if the time is fixed we schedule notifications 24h and 1h before the end of debate
-        if @copy.time_fixed?
-          Resque.enqueue_at(@copy.ends_at - 24.hours, ProposalsWorker, {:action => ProposalsWorker::LEFT24, :proposal_id => @proposal.id}) if @copy.minutes > 1440
-          Resque.enqueue_at(@copy.ends_at - 1.hour, ProposalsWorker, {:action => ProposalsWorker::LEFT1, :proposal_id => @proposal.id}) if @copy.minutes > 60
-        end
 
-
-        #fai partire il timer per far scadere la proposta
-        if quorum.minutes # && params[:proposal][:proposal_type_id] == ProposalType::STANDARD.to_s
-          Resque.enqueue_at(@copy.ends_at, ProposalsWorker, {:action => ProposalsWorker::ENDTIME, :proposal_id => @proposal.id})
+          #fai partire il timer per far scadere la proposta
+          if quorum.minutes # && params[:proposal][:proposal_type_id] == ProposalType::STANDARD.to_s
+            Resque.enqueue_at(@copy.ends_at, ProposalsWorker, {:action => ProposalsWorker::ENDTIME, :proposal_id => @proposal.id})
+          end
         end
 
 
@@ -341,8 +359,6 @@ class ProposalsController < ApplicationController
         proposalpresentation = ProposalPresentation.new(proposalparams)
         proposalpresentation.save!
         generate_nickname(current_user, @proposal)
-
-
       end #end transaction
       Resque.enqueue_in(1, NotificationProposalCreate, current_user.id, @proposal.id, @group.try(:id), @group_area.try(:id))
 
@@ -355,7 +371,9 @@ class ProposalsController < ApplicationController
             if request.env['HTTP_REFERER']["back=home"]
               page.redirect_to home_url
             else
-              page.redirect_to @group ? edit_group_proposal_url(@group, @proposal) : edit_proposal_path(@proposal)
+              page.redirect_to @proposal.is_petition? ?
+                                   @group ? group_proposal_url(@group, @proposal) : proposal_path(@proposal) :
+                                   @group ? edit_group_proposal_url(@group, @proposal) : edit_proposal_path(@proposal)
             end
           end
         }
@@ -440,19 +458,24 @@ class ProposalsController < ApplicationController
     #se il numero di valutazioni è definito
     if quorum.percentage
       if @group #calcolo il numero in base ai partecipanti
-                #se la proposta è in un'area di lavoro farà riferimento solo agli utenti di quell'area
+        #se la proposta è in un'area di lavoro farà riferimento solo agli utenti di quell'area
         if @group_area
-          @copy.valutations = ((quorum.percentage.to_f * @group_area.count_voter_partecipants.to_f) / 100).floor
+          @copy.valutations = ((quorum.percentage.to_f * @group_area.count_proposals_partecipants.to_f) / 100).floor
+          @copy.vote_valutations = ((quorum.vote_percentage.to_f * @group_area.count_voter_partecipants.to_f) / 100).floor #todo we must calculate it before votation
         else #se la proposta è di gruppo sarà basato sul numero di utenti con diritto di partecipare
-          @copy.valutations = ((quorum.percentage.to_f * @group.count_voter_partecipants.to_f) / 100).floor
+          @copy.valutations = ((quorum.percentage.to_f * @group.count_proposals_partecipants.to_f) / 100).floor
+          @copy.vote_valutations = ((quorum.vote_percentage.to_f * @group.count_voter_partecipants.to_f) / 100).floor #todo we must calculate it before votation
         end
       else #calcolo il numero in base agli utenti del portale (il 10%)
         @copy.valutations = ((quorum.percentage.to_f * User.count.to_f) / 1000).floor
+        @copy.vote_valutations = ((quorum.percentage.to_f * User.count.to_f) / 1000).floor
       end
       #deve essere almeno 1!
-      @copy.valutations = [@copy.valutations, 1].max
+      @copy.valutations = [@copy.valutations + 1, 1].max #we always add 1 for new quora
+      @copy.vote_valutations = [@copy.vote_valutations + 1, 1].max #we always add 1 for new quora
     end
     @copy.public = false
+    @copy.assigned = true
     @copy.save!
     @proposal.quorum_id = @copy.id
 
@@ -519,6 +542,8 @@ class ProposalsController < ApplicationController
 
       end
       Resque.enqueue_in(1, NotificationProposalUpdate, current_user.id, @proposal.id, @group.try(:id))
+
+      PrivatePub.publish_to(proposal_path(@proposal), reload_message) rescue nil
 
       respond_to do |format|
         flash[:notice] = I18n.t('info.proposal.proposal_updated')
@@ -730,6 +755,14 @@ p.rank, p.problem, p.subtitle, p.problems, p.objectives, p.show_comment_authors
     end
   end
 
+
+  def promote
+    respond_to do |format|
+      format.js
+      format.html
+    end
+  end
+
   def facebook_share
     @page_title = "Invite friends to join this proposal"
     respond_to do |format|
@@ -775,18 +808,16 @@ p.rank, p.problem, p.subtitle, p.problems, p.objectives, p.show_comment_authors
   #query per la ricerca delle proposte
   def query_index
     populate_search
-
-    if params[:state] == ProposalState::VOTATION_STATE
-      @replace_id = t("pages.proposals.index.voting").gsub(' ', '_')
-    elsif params[:state] == ProposalState::ACCEPTED_STATE
-      @replace_id = t("pages.proposals.index.accepted").gsub(' ', '_')
-    elsif params[:state] == ProposalState::REVISION_STATE
-      @replace_id = t("pages.proposals.index.revision").gsub(' ', '_')
-    else
-      @replace_id = t("pages.proposals.index.debate").gsub(' ', '_')
+    case params[:state]
+      when ProposalState::VOTATION_STATE
+        @replace_id = 'votation'
+      when ProposalState::ACCEPTED_STATE
+        @replace_id = 'accepted'
+      when ProposalState::REVISION_STATE
+        @replace_id = 'revision'
+      else
+        @replace_id = 'debate'
     end
-
-
     @proposals = @search.results
   end
 
@@ -858,7 +889,7 @@ p.rank, p.problem, p.subtitle, p.problems, p.objectives, p.show_comment_authors
 
     if @pgroup && !(@proposal.presentation_groups.include? @pgroup) && !(@proposal.groups.include? @pgroup)
       raise ActiveRecord::RecordNotFound
-    elsif @proposal.presentation_groups.count > 0 && !params[:group_id] && request.subdomain.empty?
+    elsif @proposal.presentation_groups.count > 0 && !params[:group_id] && !in_subdomain?
       redirect_to group_proposal_url(@proposal.presentation_groups.first, @proposal, :format => params[:format])
     end
     load_my_vote
@@ -869,9 +900,7 @@ p.rank, p.problem, p.subtitle, p.problems, p.objectives, p.show_comment_authors
   end
 
   def load_my_vote
-    if @proposal.proposal_state_id != PROP_VALUT
-      @can_vote_again = 0
-    else
+    if @proposal.in_valutation?
       ranking = ProposalRanking.find_by_user_id_and_proposal_id(current_user.id, @proposal.id) if current_user
       @my_vote = ranking.ranking_type_id if ranking
       if @my_vote
@@ -884,13 +913,15 @@ p.rank, p.problem, p.subtitle, p.problems, p.objectives, p.show_comment_authors
       else
         @can_vote_again = 1
       end
+    else
+      @can_vote_again = 0
     end
   end
 
   #questo metodo permette di verificare che l'utente collegato
   #sia l'autore della proposta il cui id è presente nei parametri
   def check_author
-    if !is_proprietary? @proposal and !is_admin?
+    unless (is_proprietary? @proposal) || is_admin?
       flash[:error] = I18n.t('error.proposals.proposal_not_your')
       redirect_to proposals_path
     end
@@ -928,7 +959,7 @@ p.rank, p.problem, p.subtitle, p.problems, p.objectives, p.show_comment_authors
   end
 
   def valutation_state_required
-    if @proposal.proposal_state_id != PROP_VALUT
+    unless @proposal.in_valutation?
       flash[:error] = I18n.t('error.proposals.proposal_not_valuating')
       respond_to do |format|
         format.js { render :update do |page|
@@ -1007,9 +1038,6 @@ p.rank, p.problem, p.subtitle, p.problems, p.objectives, p.show_comment_authors
   end
 
 
-
-
-
   private
 
   def render_404(exception=nil)
@@ -1021,8 +1049,5 @@ p.rank, p.problem, p.subtitle, p.problems, p.objectives, p.show_comment_authors
     end
     true
   end
-
-
-
 
 end

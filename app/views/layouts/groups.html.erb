@@ -33,7 +33,7 @@
                   <%= link_to t('pages.groups.layout.calendar'), group_events_url(@group), class: (params[:controller] == 'events' ? 'sel' : '') %>
 
               <% end %>
-              <% unless in_subdomain? %>
+              <% unless @group.disable_documents %>
                   <% if ::Configuration::documents_active %>
                       <span> ⋅ </span>
                       <%= link_to t('pages.groups.header.documents'), group_documents_url(@group), class: (params[:controller] == 'documents' ? 'sel' : '') %>
@@ -46,7 +46,7 @@
               <%end%>
               <% if can? :update, @group %>
                   <span> ⋅ </span>
-                  <%= link_to t('pages.groups.header.settings'), edit_group_url(@group), class: ((params[:controller] == 'groups' && params[:action] != 'show') || (['group_areas', 'group_partecipations', 'search_partecipants'].include? params[:controller]) || (params[:controller].start_with? 'frm/admin') ? 'sel' : '') %>
+                  <%= link_to t('pages.groups.header.settings'), edit_group_url(@group), class: ((params[:controller] == 'groups' && params[:action] != 'show') || (['group_areas', 'group_partecipations', 'search_partecipants','quorums'].include? params[:controller]) || (params[:controller].start_with? 'frm/admin') ? 'sel' : '') %>
               <% end %>
           <% end %>
 

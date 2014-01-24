@@ -61,7 +61,7 @@ class Group < ActiveRecord::Base
   has_many :internal_proposals, :through => :group_proposals, :class_name => 'Proposal', :source => :proposal
 
   has_many :group_quorums, :class_name => 'GroupQuorum', :dependent => :destroy
-  has_many :quorums, :through => :group_quorums, :class_name => 'Quorum', :source => :quorum, order: 'seq nulls last, quorums.id'
+  has_many :quorums, :through => :group_quorums, :class_name => 'BestQuorum', :source => :quorum, order: 'seq nulls last, quorums.id'
 
   has_many :voters, :through => :group_partecipations, :source => :user, :class_name => 'User', :include => [:partecipation_roles], :conditions => ["partecipation_roles.id = ?", 2]
 
@@ -75,10 +75,12 @@ class Group < ActiveRecord::Base
   has_many :tags, :through => :group_tags, :class_name => 'Tag'
 
   #forum
-  has_many :forums, :class_name => 'Frm::Forum', foreign_key: 'group_id'
+  has_many :forums, :class_name => 'Frm::Forum', foreign_key: 'group_id', dependent: :destroy
   has_many :topics, through: :forums, class_name: 'Frm::Topic', source: :topics
-  has_many :categories, :class_name => 'Frm::Category', foreign_key: 'group_id'
-  has_many :moderator_groups, :class_name => 'Frm::Group', foreign_key: 'group_id'
+  has_many :categories, :class_name => 'Frm::Category', foreign_key: 'group_id', dependent: :destroy
+  has_many :moderator_groups, :class_name => 'Frm::Group', foreign_key: 'group_id', dependent: :destroy
+
+  has_one :statistic, :class_name => 'GroupStatistic'
 
   # Check for paperclip
   has_attached_file :image,
@@ -178,6 +180,7 @@ class Group < ActiveRecord::Base
     public_f.group = self
     public_f.save!
 
+    GroupStatistic.create(:group_id => self.id, valutations: 0, vote_valutations: 0, good_score: 0).save!
   end
 
   def destroy
@@ -189,13 +192,22 @@ class Group < ActiveRecord::Base
     self.private
   end
 
-  #utenti che possono votare
+  #utenti che possono partecipare alle proposte
+  def count_proposals_partecipants
+    self.partecipants.count(
+        :joins => "join partecipation_roles
+               on group_partecipations.partecipation_role_id = partecipation_roles.id
+               left join action_abilitations on partecipation_roles.id = action_abilitations.partecipation_role_id",
+        :conditions => "(action_abilitations.group_action_id = #{GroupAction::PROPOSAL_PARTECIPATION} AND action_abilitations.group_id = #{self.id}) or (partecipation_roles.id = 2)")
+  end
+
+  #utenti che possono votare le proposte
   def count_voter_partecipants
     self.partecipants.count(
         :joins => "join partecipation_roles
                on group_partecipations.partecipation_role_id = partecipation_roles.id
                left join action_abilitations on partecipation_roles.id = action_abilitations.partecipation_role_id",
-        :conditions => "(action_abilitations.group_action_id = 7 AND action_abilitations.group_id = #{self.id}) or (partecipation_roles.id = 2)")
+        :conditions => "(action_abilitations.group_action_id = #{GroupAction::PROPOSAL_VOTE} AND action_abilitations.group_id = #{self.id}) or (partecipation_roles.id = 2)")
   end
 
   #utenti che possono eseguire un'azione
@@ -209,7 +221,7 @@ class Group < ActiveRecord::Base
 
   #restituisce la lista dei portavoce del gruppo
   def portavoce
-    return self.partecipants.where(:conditions => {"group_partecipations.partecipation_role_id" => 2})
+    self.partecipants.where(["group_partecipations.partecipation_role_id = ?",PartecipationRole::PORTAVOCE])
   end
 
   def partecipant_tokens=(ids)

@@ -2,10 +2,14 @@
 <% @username = @data[:username] %>
 <% @proposal = Proposal.find(@data[:proposal_id]) %>
 <% @alert_url = check_alert_alert_url(@alert, host: @alert.user.locale.host, l: @alert.user.locale.lang ) %>
-<%=raw t('mailer.new_contribute.title', {user: @username, comment: @comment.is_contribute? ? t('words.contribution') : t('words.comment'), })%><br/>
-<%=raw t('mailer.new_contribute.view_proposal', click_here: (link_to t('mailer.default.click_here'), @alert_url)) %> <br/>
 
-<div id="comment<%= @comment.id %>" style="padding: 20px 0 0;clear: both;">
+
+
+<%= email_h1 do %>
+    <%=raw t('mailer.new_contribute.title', {user: @username, comment: @comment.is_contribute? ? t('words.contribution') : t('words.comment'), })%>
+<% end %>
+
+<div style="padding: 20px 0 0;clear: both;">
   <div style="float: left;margin: 0px 5px 5px 0px;" title="<% if @proposal.is_anonima? %><%= @username %><% end %>">
     <% if @proposal.is_anonima? %>
         <img src="http://www.gravatar.com/avatar/<%= Digest::MD5.hexdigest(@username) %>?s=40&d=identicon&r=PG"/>
@@ -27,4 +31,7 @@
     </div>
   </div>
 </div>
-<%=raw t('mailer.new_contribute.view_proposal', click_here: (link_to t('mailer.default.click_here'), @alert_url)) %>
+
+<%= blue_panel do %>
+    <%=raw t('mailer.new_contribute.view_proposal', click_here: (link_to t('mailer.default.click_here'), @alert_url)) %>
+<% end %>

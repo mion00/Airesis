@@ -15,6 +15,8 @@ class ApplicationController < ActionController::Base
 
   before_filter :load_tutorial
 
+  skip_before_filter :verify_authenticity_token, :if => Proc.new { |c| c.request.format == 'application/json' }
+
 
   protected
 
@@ -30,12 +32,22 @@ class ApplicationController < ActionController::Base
 
   def load_group
     if params[:group_id].to_s != ''
-
       @group = Group.find(params[:group_id])
     elsif !['', 'www'].include? request.subdomain
       @group = Group.find_by_subdomain(request.subdomain)
     end
+    @group
   end
+
+
+  def load_blog_data
+    @user = @blog.user
+    @blog_posts = @blog.posts.published.includes(:user,:blog,:tags).order('published_at DESC').page(params[:page]).per(COMMENTS_PER_PAGE)
+    @recent_comments =  @blog.comments.order('created_at DESC').limit(10)
+    @recent_posts =  @blog.posts.published.order('published_at DESC').limit(10)
+    @archives = @blog.posts.select("COUNT(*) AS posts, extract(month from created_at) AS MONTH , extract(year from created_at) AS YEAR").group("MONTH, YEAR").order("YEAR desc, extract(month from created_at) desc")
+  end
+
 
   def extract_locale_from_tld
 
@@ -72,7 +84,7 @@ class ApplicationController < ActionController::Base
     {:l => I18n.locale }
   end
 
-  helper_method :is_admin?, :is_moderator?, :is_proprietary?, :current_url, :link_to_auth, :mobile_device?, :age, :is_group_admin?
+  helper_method :is_admin?, :is_moderator?, :is_proprietary?, :current_url, :link_to_auth, :mobile_device?, :age, :is_group_admin?, :in_subdomain?
 
 
   def log_error(exception)
@@ -161,6 +173,11 @@ class ApplicationController < ActionController::Base
     is_admin? ||is_moderator? || admin_denied
   end
 
+  def in_subdomain?
+    request.subdomain.present? && request.subdomain != 'www'
+  end
+
+
   #risposta nel caso sia necessario essere amministartori
   def admin_denied
     respond_to do |format|
@@ -215,7 +232,8 @@ class ApplicationController < ActionController::Base
         (params[:controller] == "passwords") ||
         (params[:controller] == "users/omniauth_callbacks") ||
         (params[:controller] == "alerts" && params[:action] == "polling") ||
-        (params[:controller] == "users" && (params[:action] == "join_accounts" || params[:action] == "confirm_credentials")))
+        (params[:controller] == "users" && (params[:action] == "join_accounts" || params[:action] == "confirm_credentials")) ||
+        (params[:action] == 'feedback'))
       session[:proposal_id] = nil
       session[:proposal_comment] = nil
       session[:user_return_to] = request.url

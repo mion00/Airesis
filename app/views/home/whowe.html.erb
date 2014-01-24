@@ -15,30 +15,12 @@
   </div>
 </div>
 
-<div class="row">
+<div class="slide">
   <div class="row centered">
 
-    <h2 id="opensource">Cittadini che vogliono una democrazia pi&ugrave; evoluta</h2>
+    <h2 id="opensource"><%= t('home.whowe.intro.title')%></h2>
 
-    <p>Airesis nasce dall'unione dei progetti Agor&agrave; 2.0 e Airesis confluiti successivamente nell'associazione
-      <a href="http://www.tecnologiedemocratiche.it/" target="_blank">Tecnologie Democratiche</a> che ha l'obiettivo di
-      realizzare una innovativa piattaforma open-source per l'e-democracy. </p>
-
-    <p>Il lavoro &egrave; portato avanti <strong>interamente da volontari </strong>, uniti dalla volont&agrave; di
-      creare
-      uno strumento che consenta ai cittadini e ai gruppi di organizzarsi ed elaborare
-      <strong>risposte ai problemi comuni </strong>in modo <strong>trasparente </strong>, <strong>democratico</strong>,
-      <strong>partecipato</strong>, <strong>costruttivo</strong>, valorizzando l'
-      <strong>intelligenza collettiva </strong>.
-    </p>
-
-    <p>Se anche tu condividi il nostro obiettivo <a href="/partecipa">puoi contribuire</a> contattando i nostri
-      volontari.
-    </p>
-
-    <p>Guarda <%= link_to 'la storia di Airesis', story_path %> nel corso degli anni. Scopri come siamo nati e cresciuti
-      e quali sono i nostri obiettivi per il futuro
-    </p>
+    <%= t('home.whowe.intro.description_html', story: story_path) %>
   </div>
 
 </div>
@@ -53,7 +35,7 @@
         <%= image_tag "volunteers/rodi_alessandro.jpg", :width => 150 %>
       </div>
       <div>
-        <%= mail_to  'alessandro.rodi@airesis.it'%>
+        <SCRIPT TYPE="text/javascript"> emailE=('alessandro.rodi@' + 'airesis.it');document.write('<A href="mailto:' + emailE + '">' + emailE + '</a>')</SCRIPT>
         <a href="//plus.google.com/105378296770624698158?prsrc=3" target="_blank" rel="publisher" style="text-decoration:none;display:inline-block;color:#333;text-align:center; font:13px/16px arial,sans-serif;white-space:nowrap;">
           <span style="display:inline-block;font-weight:bold;vertical-align:top;margin-right:0px; margin-top:0px;">Alessandro</span>
           <span style="display:inline-block;vertical-align:top;margin-right:5px; margin-top:0px;">su</span>
@@ -80,7 +62,7 @@
         <%= image_tag "volunteers/tilatti_marino.png", :width => 150 %>
       </div>
       <div>
-        <%= mail_to  'marino.tilatti@airesis.it'%>
+        <SCRIPT TYPE="text/javascript"> emailE=('marino.tilatti@' + 'airesis.it');document.write('<A href="mailto:' + emailE + '">' + emailE + '</a>')</SCRIPT>
         <a href="skype:nemesistemi?add"><img src="http://download.skype.com/share/skypebuttons/buttons/add_green_transparent_118x23.png" style="border: none;" width="118" height="23" alt="Aggiungimi a Skype"/></a>
       </div>
     </div>
@@ -107,7 +89,7 @@
       </div>
       <div>
         <a href="skype:nicolagiulietti?add"><img src="http://download.skype.com/share/skypebuttons/buttons/add_green_transparent_118x23.png" style="border: none;" width="118" height="23" alt="Aggiungimi a Skype"/></a><br>
-        <%= mail_to 'mailto:nicolagiulietti@hotmail.it' %>
+        <SCRIPT TYPE="text/javascript"> emailE=('nicolagiulietti@' + 'hotmail.it');document.write('<A href="mailto:' + emailE + '">' + emailE + '</a>')</SCRIPT>
         <div>cell +39.3802931955</div>
       </div>
     </div>
@@ -129,7 +111,7 @@
         <%= image_tag "volunteers/baiotto_marco.png", :width => 150 %>
       </div>
       <div>
-        <%= mail_to 'marco.baiotto@airesis.it' %>
+        <SCRIPT TYPE="text/javascript"> emailE=('marco.baiotto@' + 'airesis.it');document.write('<A href="mailto:' + emailE + '">' + emailE + '</a>')</SCRIPT>
       </div>
     </div>
     <div class="large-9 columns">
@@ -175,7 +157,7 @@
         <%= image_tag "volunteers/tolja_jacopo.jpg", :width => 150 %>
       </div>
       <div>
-        <%= mail_to 'jacopo.tolja@airesis.it' %>
+        <SCRIPT TYPE="text/javascript"> emailE=('jacopo.tolja@' + 'airesis.it');document.write('<A href="mailto:' + emailE + '">' + emailE + '</a>')</SCRIPT>
       </div>
       <div>
 
@@ -201,7 +183,7 @@
         <%= image_tag "volunteers/curini_simone.jpg", :width => 150 %>
       </div>
       <div>
-        <%= mail_to 'simone.curini@airesis.it' %>
+        <SCRIPT TYPE="text/javascript"> emailE=('simone.curini@' + 'airesis.it');document.write('<A href="mailto:' + emailE + '">' + emailE + '</a>')</SCRIPT>
       </div>
     </div>
     <div class="large-9 columns">
@@ -223,7 +205,7 @@
         <%= image_tag "volunteers/mion_carlo.jpg", :width => 150 %>
       </div>
       <div style="line-height: 20px">
-        <%= mail_to 'carlo.mion@airesis.it' %>
+        <SCRIPT TYPE="text/javascript"> emailE=('carlo.mion@' + 'airesis.it');document.write('<A href="mailto:' + emailE + '">' + emailE + '</a>')</SCRIPT>
         <a href="//plus.google.com/101515742553331217199?prsrc=3" target="_blank"
            rel="publisher" target="_top" style="text-decoration:none;display:inline-block;color:#333;text-align:center; font:13px/16px arial,sans-serif;white-space:nowrap;">
           <span style="display:inline-block;font-weight:bold;vertical-align:top;margin-right:5px; margin-top:0px;">Carlo Mion</span><span style="display:inline-block;vertical-align:top;margin-right:13px; margin-top:0px;">on</span>
@@ -250,7 +232,7 @@
         <%= image_tag "volunteers/zanellato_luca.jpg", :width => 150 %>
       </div>
       <div>
-        <%= mail_to 'luca.zanellato@airesis.it' %>
+        <SCRIPT TYPE="text/javascript"> emailE=('luca.zanellato@' + 'airesis.it');document.write('<A href="mailto:' + emailE + '">' + emailE + '</a>')</SCRIPT>
       </div>
       <div>
 
@@ -285,47 +267,30 @@
 
     <h2><%= t('.special_thanks') %></h2>
     <ul>
-      <li><a href="https://www.facebook.com/groups/incontrom5s/" target="_blank">Il Gruppo Incontro dei cittadini a 5
-        Stelle</a> che supporta il
-        progetto e ha finanziato le spese per l'hosting per tutto il 2013  e 2014
+      <li><%=t('.thanks_1_html')%>
       </li>
-      <li>Chi ha lavorato nell'ombra per divulgare il progetto aiutandoci a reperire le professionalit&agrave;
-        necessarie
-        per portarlo avanti
+      <li><%=t('.thanks_2')%>
       </li>
-      <li>Chi ci segue attraverso le nostre pagine facebook e le nostre mailing list, fornendo utili consigli,
-        informazioni
-        ed un caldo supporto morale
+      <li><%=t('.thanks_3')%>
       </li>
-      <li>Chi ha ospitato e ospiterà nella propria sede o nella propria casa le riunioni fisiche del gruppo.</li>
-      <li><a href="http://www.jetbrains.com/" target="_blank">JetBrains</a> che ci fornisce gratuitamente
-        <a href="http://www.jetbrains.com/ruby/" target="_blank">RubyMine</a> per lo sviluppo
+      <li><%=t('.thanks_4')%></li>
+      <li><%=t('.thanks_5_html')%>
       </li>
-      <li><a href="https://crowdin.net/" target="_blank">Crowdin</a> che ci fornisce gratuitamente
-        <a href="https://crowdin.net/project/airesis" target="_blank">la piattaforma per le traduzioni e
-          l'internazionalizzazione</a>
+      <li><%=t('.thanks_6_html')%>
       </li>
-      <li><a href="http://www.gurock.com/" target="_blank">Gurock Software</a> che ci fornisce gratuitamente
-        <a href="http://www.gurock.com/testrail/" target="_blank">TestRail test management software</a> per la gestione
-        e
-        realizzazione dei test
+      <li><%=t('.thanks_7_html')%>
       </li>
-      <li>Il gentilissimo <a href="https://twitter.com/rbates" target="_blank">Ryan Bates</a> che ci fornisce
-        gratuitamente
-        l'abbonamento
-        <a href="http://railscasts.com/" target="_blank">RailsCasts</a> per la visualizzazione di tutorial e video su
-        Ruby
-        On Rails
+      <li><%=t('.thanks_8_html')%>
       </li>
     </ul>
     <a href="http://www.jetbrains.com/ruby/" target="_blank" style="margin-right:40px;">
-      <img src="http://www.h-online.com/imgs/43/6/0/0/6/6/4/RubyMine_logo200-d15f4bf32abe0692.png" height="32px"/>
+      <img src="http://confluence.jetbrains.com/download/attachments/20238/RM_logo.gif" style="height:32px"/>
     </a>
     <a href="http://www.gurock.com/testrail/" target="_blank" style="margin-right:40px;">
-      <img src="http://www.gurock.com/images/start/testrail.png" height="32px"/>
+      <img src="http://www.gurock.com/images/start/testrail.png" style="height:32px"/>
     </a>
     <a href="http://railscasts.com/" target="_blank">
-      <img src="http://railscasts.com/assets/railscasts_logo-7101a7cd0a48292a0c07276981855edb.png" height="32px"/>
+      <img src="http://railscasts.com/assets/railscasts_logo-7101a7cd0a48292a0c07276981855edb.png" style="height:32px"/>
     </a>
   </div>
 </div>

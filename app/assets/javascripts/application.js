@@ -9,7 +9,6 @@
 //= require jquery.sliderAccess
 //= require timepicker
 //= require jquery_ujs
-
 //= require jquery.tokeninput
 //= require democracy
 //= require fullcalendar
@@ -21,11 +20,9 @@
 //= require jquery.dataTables.columnFilter
 //= require rails.validations
 //= require jquery.quick-wizard
-//= require simplemodal
 //= require jquery.watermark.min
 //= require jquery.elastic
 //= require jquery.gbutton
-//= require simplemodal
 //= require jqlplot/jquery.jqplot
 //= require jqlplot/jqplot.pieRenderer
 //= require jqlplot/jqplot.dateAxisRenderer
@@ -50,4 +47,5 @@
 //= require paypal-button.min
 //= require foundation
 //= require list
-
+//= require diff_match_patch
+//= require jquery.appear

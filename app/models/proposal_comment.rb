@@ -3,12 +3,16 @@ class ProposalComment < ActiveRecord::Base
   include LogicalDeleteHelper
   include ActionView::Helpers::TextHelper
 
+  has_paper_trail :class_name => 'ProposalCommentVersion', only: [:content], on: [:update,:destroy]
+
+
   belongs_to :user, :class_name => 'User', :foreign_key => :user_id
   belongs_to :contribute, :class_name => 'ProposalComment', :foreign_key => :parent_proposal_comment_id
   has_many :replies, :class_name => 'ProposalComment', :foreign_key => :parent_proposal_comment_id, dependent: :destroy
   has_many :repliers, class_name: 'User', :through => :replies, :source => :user, uniq: true
   belongs_to :proposal, :class_name => 'Proposal', :foreign_key => :proposal_id, :counter_cache => true
   has_many :rankings, :class_name => 'ProposalCommentRanking', :dependent => :destroy
+  has_many :rankers, :through => :rankings, :class_name => 'User', source: :user
   belongs_to :paragraph
 
   has_one :integrated_contribute, :class_name => 'IntegratedContribute', dependent: :destroy

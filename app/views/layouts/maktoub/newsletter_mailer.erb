@@ -109,7 +109,7 @@
                             </td>
                           </tr>
                       <% end %>
-                      <%@ruser = @resource || @user || @to || @alert.user %>
+                      <%@ruser = @resource || @user || @to || @alert.try(:user) || User.find(55)  %>
                       <%@url = @ruser.original_locale.host %>
                       <%@url += "?l=#{@ruser.original_locale.lang}" if @ruser.original_locale.lang%>
 
@@ -132,7 +132,7 @@
                       <tr>
                         <td colspan="2" valign="middle" id="utility">
                           <div>
-                            &nbsp;<%= link_to t('mailer.default.edit_preferences'), alarm_preferences_users_url(:host => @ruser.original_locale.host, l: @ruser.original_locale.lang), :target => "_blank" %>
+                            &nbsp;<%= link_to t('mailer.default.edit_preferences'), main_app.alarm_preferences_users_url(:host => @ruser.original_locale.host, l: @ruser.original_locale.lang), :target => "_blank" %>
                           </div>
                         </td>
                       </tr>

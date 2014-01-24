@@ -73,29 +73,30 @@ class Proposal < ActiveRecord::Base
   validates_uniqueness_of :title
   validates_presence_of :proposal_category_id, :message => "obbligatorio"
 
-  validates_presence_of :quorum_id #, :if => :is_standard? #todo bug in client_side_validation
+  validates_presence_of :quorum_id, :unless => :is_petition? #todo bug in client_side_validation
 
-  validates_with AtLeastOneValidator, associations: [:solutions]
+  validates_with AtLeastOneValidator, associations: [:solutions], unless: :is_petition?
 
-  attr_accessor :update_user_id, :group_area_id, :percentage, :integrated_contributes_ids, :integrated_contributes_ids_list, :last_revision, :topic_id, :votation
+  attr_accessor :update_user_id, :group_area_id, :percentage, :integrated_contributes_ids, :integrated_contributes_ids_list, :last_revision, :topic_id, :votation, :petition_phase
 
   attr_accessible :proposal_category_id, :content, :title, :interest_borders_tkn, :subtitle, :objectives, :problems, :tags_list,
                   :presentation_group_ids, :private, :anonima, :quorum_id, :visible_outside, :secret_vote, :vote_period_id,
                   :group_area_id, :topic_id,
-                  :sections_attributes, :solutions_attributes, :proposal_type_id, :proposal_votation_type_id, :integrated_contributes_ids_list, :votation
+                  :sections_attributes, :solutions_attributes, :proposal_type_id, :proposal_votation_type_id, :integrated_contributes_ids_list, :votation, :signatures, :petition_phase
 
   accepts_nested_attributes_for :sections, allow_destroy: true
   accepts_nested_attributes_for :solutions, allow_destroy: true
 
   #tutte le proposte 'attive'. sono attive le proposte dalla  fase di valutazione fino a quando non vengono accettate o respinte
-  scope :current, {:conditions => {:proposal_state_id => [PROP_VALUT, PROP_WAIT_DATE, PROP_WAIT, PROP_VOTING]}}
+  scope :current, {:conditions => {:proposal_state_id => [ProposalState::VALUTATION, PROP_WAIT_DATE, PROP_WAIT, PROP_VOTING]}}
   #tutte le proposte in valutazione
-  scope :in_valutation, {:conditions => {:proposal_state_id => PROP_VALUT}}
+  scope :in_valutation, {:conditions => {:proposal_state_id => ProposalState::VALUTATION}}
   #tutte le proposte in attesa di votazione o attualmente in votazione
 
   #scope :waiting, {:conditions => {:proposal_state_id => [ProposalState::WAIT_DATE, ProposalState::WAIT]}}
 
-  scope :before_votation, {:conditions => {:proposal_state_id => [PROP_VALUT, PROP_WAIT_DATE, PROP_WAIT]}}
+  #retrieve proposals in a state before votation, exclude petitions
+  scope :before_votation, where(['proposal_state_id in (?) and proposal_type_id != ?',[ProposalState::VALUTATION, PROP_WAIT_DATE, PROP_WAIT], 11 ])
 
   scope :in_votation, {:conditions => {:proposal_state_id => [ProposalState::WAIT_DATE, ProposalState::WAIT, PROP_VOTING]}}
 
@@ -115,7 +116,7 @@ class Proposal < ActiveRecord::Base
   #tutte le proposte entrate in fase di revisione e feedback
   scope :revision, {:conditions => {:proposal_state_id => ProposalState::ABANDONED}}
 
-  scope :public, {:conditions => {:private => false}}
+  scope :public, {:conditions => ['private = ? or visible_outside = ?',true,true]}
   scope :private, {:conditions => {:private => true}} #proposte interne ai gruppi
 
   #condizione di appartenenza ad una categoria
@@ -152,6 +153,29 @@ class Proposal < ActiveRecord::Base
     end
   end
 
+  #retrieve the list of propsoals for the user with a count of the number of the notifications for each proposal
+  def self.open_space_portlet(user)
+    @list_a = Proposal.public
+    .select('distinct proposals.*, proposal_alerts.count as alerts_count, proposal_rankings.ranking_type_id as ranking')
+    .includes([:quorum, {:users => :image}, :proposal_type, :groups, :presentation_groups, :category])
+    .joins("left outer join proposal_alerts on proposals.id = proposal_alerts.proposal_id and proposal_alerts.user_id = #{user.id}")
+    .joins("left outer join proposal_rankings on proposals.id = proposal_rankings.proposal_id and proposal_rankings.user_id = #{user.id}")
+    .joins("join proposal_types pt on (proposals.proposal_type_id = pt.id)")
+    .where("pt.name != '#{ProposalType::PETITION}'")
+    .order('updated_at DESC').limit(10)
+  end
+
+  #retrieve the list of propsoals for the user with a count of the number of the notifications for each proposal
+  def self.open_space_petitions_portlet(user)
+    @list_a = Proposal.public
+    .select('distinct proposals.*, proposal_alerts.count as alerts_count')
+    .includes([:quorum, {:users => :image}, :proposal_type, :groups, :presentation_groups, :category])
+    .joins("left outer join proposal_alerts on proposals.id = proposal_alerts.proposal_id and proposal_alerts.user_id = #{user.id}")
+    .joins("join proposal_types pt on (proposals.proposal_type_id = pt.id)")
+    .where("pt.name = '#{ProposalType::PETITION}'")
+    .order('updated_at DESC').limit(10)
+  end
+
   def self.votation_portlet(user)
     proposals = Proposal.find_by_sql("select distinct p.*, pa.count as alerts_count, pk.ranking_type_id as ranking, e.endtime as end_time
                           from proposals p
@@ -159,12 +183,14 @@ class Proposal < ActiveRecord::Base
                           join groups g on g.id = gp.group_id
                           join group_partecipations gi on (g.id = gi.group_id and gi.user_id = #{user.id})
                           join partecipation_roles pr on (gi.partecipation_role_id = pr.id)
+                          join proposal_types pt on (p.proposal_type_id = pt.id)
                           join events e on e.id = p.vote_period_id
                           left join action_abilitations aa on (aa.partecipation_role_id = pr.id)
                           left join user_votes uv on (uv.proposal_id = p.id and uv.user_id = #{user.id})
                           left join proposal_alerts pa on p.id = pa.proposal_id and pa.user_id = #{user.id}
                           left join proposal_rankings pk on p.id = pk.proposal_id and pk.user_id = #{user.id}
                           where  p.proposal_state_id = #{ProposalState::VOTING}
+                          and pt.name != '#{ProposalType::PETITION}'
                           and uv.id is null
                           and (aa.group_action_id = #{GroupAction::PROPOSAL_VOTE} or pr.id = #{PartecipationRole::PORTAVOCE})
                           order by e.endtime asc")
@@ -244,7 +270,7 @@ def rejected?
 end
 
 def is_current?
-  [PROP_VALUT, PROP_WAIT_DATE, PROP_WAIT, PROP_VOTING].include? self.proposal_state_id
+  [ProposalState::VALUTATION, PROP_WAIT_DATE, PROP_WAIT, PROP_VOTING].include? self.proposal_state_id
 end
 
 #restituisce 'true' se la proposta è attualmente anonima, ovvero è stata definita come tale ed è in dibattito
@@ -259,6 +285,10 @@ end
 
 def in_group_area?
   self.in_group? && !self.presentation_areas.first.nil?
+end
+
+def is_petition?
+  self.proposal_type_id == 11
 end
 
 
@@ -305,7 +335,7 @@ def save_tags
       else
         self.sections.first
       end
-  self.content = truncate_words(first_section.paragraphs.first.content.gsub(%r{</?[^>]+?>}, ''), 60)
+  self.content = first_section ? truncate_words(first_section.paragraphs.first.content.gsub(%r{</?[^>]+?>}, ''), 60) : ''
 
 
 end
@@ -330,19 +360,21 @@ def save_proposal_history
     end
   end
   self.solutions.each do |solution|
+
     solution_history = @revision.solution_histories.build(seq: solution.seq, title: solution.title, added: solution.new_record?, removed: solution.marked_for_destruction?)
-    something_solution = false
-    solution.sections.each do |section|
+    something_solution = solution.title_changed? || solution.marked_for_destruction?
+        solution.sections.each do |section|
       paragraph = section.paragraphs.first
       paragraph.content = '' if (paragraph.content == '<p></p>' && paragraph.content_was == '')
-      if paragraph.content_changed? || section.marked_for_destruction?
+      if paragraph.content_changed? || section.marked_for_destruction? || solution.marked_for_destruction?
         something = true
         something_solution = true
-        section_history = solution_history.section_histories.build(section_id: section.id, title: section.title, seq: section.seq, added: section.new_record?, removed: section.marked_for_destruction?)
+        section_history = solution_history.section_histories.build(section_id: section.id, title: section.title, seq: section.seq, added: section.new_record?, removed: (section.marked_for_destruction? || solution.marked_for_destruction?))
         section_history.paragraphs.build(content: paragraph.content_dirty, seq: 1, proposal_id: self.id)
       end
     end
     solution_history.destroy unless something_solution
+    something = true if something_solution
   end
   something ? @revision.save! : @revision.destroy
   self.touch
@@ -485,7 +517,7 @@ searchable do
   integer :valutations
   double :rank
   time :quorum_ends_at do
-    self.quorum.ends_at
+    self.quorum.ends_at if self.quorum
   end
 
   #two infos only when is in vote
@@ -493,33 +525,14 @@ searchable do
     self.user_votes.count if voting? || voted?
   end
   time :votation_ends_at do
-    self.vote_period.endtime if voting? || voted?
+    self.vote_period.endtime if self.vote_period && (voting? || voted?)
   end
 end
 
 #restituisce la percentuale di avanzamento della proposta in base al quorum assegnato
 def calculate_percentage
   return unless self.quorum
-  percentages = []
-  if self.quorum.valutations
-    minimum = [self.valutations, self.quorum.valutations].min
-    percentagevals = minimum.to_f/self.quorum.valutations.to_f
-    percentagevals *= 100
-    percentages << percentagevals
-  end
-  if self.quorum.minutes
-    minimum = [Time.now, self.quorum.ends_at].min
-    minimum = ((minimum - self.quorum.started_at)/60)
-    percentagetime = minimum.to_f/self.quorum.minutes.to_f
-    percentagetime *= 100
-    percentages << percentagetime
-  end
-
-  if self.quorum.or?
-    @percentage=percentages.max
-  else
-    @percentage=percentages.min
-  end
+  @percentage = self.quorum.debate_progress
 end
 
 def percentage

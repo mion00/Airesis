@@ -13,7 +13,7 @@ $large-screen: 1440px;
 
 #main-copy {
     position: relative;
-    background-color: white;
+    background-color: rgba(0,0,0,0.1);
     padding-right: 20px;
     min-height: 100%;
 
@@ -37,7 +37,7 @@ $large-screen: 1440px;
 
 #menu-left {
     float: left;
-    width: 280px;
+    width: 250px;
     padding-top: 15px;
     display: none;
     padding-top: 95px;
@@ -131,7 +131,8 @@ $large-screen: 1440px;
 }
 
 .logo1 {
-    height: 100%;
+    margin-left: 5px;
+    margin-top: 5px;
 }
 
 #menu-top .sep1 {
@@ -298,6 +299,9 @@ $large-screen: 1440px;
     font-size: 12px;
 }
 
+
+
+
 .cont-mess ::-webkit-scrollbar,
 #menu-top ::-webkit-scrollbar {
     width: 8px;
@@ -387,6 +391,8 @@ $large-screen: 1440px;
 @media (min-width: $medium-screen) {
     #menu-right .mybox {
         box-shadow: none;
+        background-color: transparent;
+        border: none;
     }
 }
 
@@ -706,7 +712,7 @@ $large-screen: 1440px;
         height: 0;
         border-left: 20px solid transparent;
         border-right: 20px solid transparent;
-        border-bottom: 15px solid #fff;
+        border-bottom: 15px solid #E5E5E5;
     }
     .borx {
         position: fixed;
@@ -714,7 +720,7 @@ $large-screen: 1440px;
         left: 0px;
         right: 92px;
         height: 10px;
-        background: #fff;
+        background: transparent;
 
         &.expandb {
             right: 0px;
@@ -724,14 +730,8 @@ $large-screen: 1440px;
 
 .mybox {
     padding: 10px;
-    padding-bottom: 5px;
-    background-color: #fff;
-    box-shadow: 0px 0px 1px #000;
-    border-radius: 3px;
-    margin: 0px;
     margin-bottom: 10px;
-    font-size: 0.8em;
-    color: #333;
+    font-size: 0.9em;
     position: relative;
 
     &.socialnetwork {
@@ -845,6 +845,22 @@ $large-screen: 1440px;
             text-decoration: underline;
         }
     }
+    .language.footer {
+        max-width: 7%;
+    }
+}
+
+#language {
+    a {
+        font-size: 1.5em;
+        line-height: 1.5em;
+    }
+    img {
+        max-width: 100%;
+    }
+    h1 {
+        text-align: center;
+    }
 }
 
 .centerfloat {
@@ -896,7 +912,8 @@ $large-screen: 1440px;
 #menu-left .btn {
     display: table;
     margin: 5px auto;
-
+    width: 90%;
+    text-align: center;
 }
 
 .btn {

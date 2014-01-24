@@ -14,30 +14,27 @@ class QuorumsController < ApplicationController
   layout :choose_layout
 
   def new
-    @quorum = Quorum.new
-    @partecipants_count = @group.count_voter_partecipants #_partecipants.count
+    @page_title=  t('pages.groups.edit_quorums.new_quorum.title')
+    @quorum = BestQuorum.new({:percentage => 0, :good_score => 20, :vote_percentage => 0, :vote_good_score => 50})
+    @partecipants_count = @group.count_proposals_partecipants
+    @vote_partecipants_count = @group.count_voter_partecipants
     respond_to do |format|
       format.js
+      format.html
     end
   end
 
   def create
     begin
-      Quorum.transaction do
-        @quorum = @group.quorums.build(params[:quorum])
+      BestQuorum.transaction do
+        @quorum = @group.quorums.build(params[:best_quorum])
         @quorum.public = false
         @group.save!
       end
 
       respond_to do |format|
         flash[:notice] = t('info.quorums.quorum_created')
-        format.js { render :update do |page|
-          page.replace_html "flash_messages", :partial => 'layouts/flash', :locals => {:flash => flash}
-          page.replace_html "quorum_panel_container", :partial => 'groups/quorums_panel'
-          page.call "hideNewQuorumPanel"
-          page.call "generateTable"
-        end
-        }
+        format.js
       end
 
     rescue Exception => e
@@ -54,25 +51,21 @@ class QuorumsController < ApplicationController
   end
 
   def edit
-    @partecipants_count = @group.count_voter_partecipants
+    @page_title = t('pages.groups.edit_quorums.edit_quorum')
+    @partecipants_count = @group.count_proposals_partecipants
+    @vote_partecipants_count = @group.count_voter_partecipants
   end
 
 
   def update
     Quorum.transaction do
-      @quorum.attributes = params[:quorum]
+      @quorum.attributes = params[:best_quorum]
       @quorum.save!
     end
 
     respond_to do |format|
       flash[:notice] = t('info.quorums.quorum_updated')
-      format.js { render :update do |page|
-        page.replace_html "flash_messages", :partial => 'layouts/flash', :locals => {:flash => flash}
-        page.replace_html "quorum_panel_container", :partial => 'groups/quorums_panel'
-        page.call "hideEditQuorumPanel"
-        page.call "generateTable"
-      end
-      }
+      format.js
     end
 
   rescue Exception => e

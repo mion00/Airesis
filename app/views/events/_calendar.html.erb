@@ -19,7 +19,7 @@
 <% end %>
 
 
-<div class="calendar_container">
+<div class="calendar_container card">
   <div id='calendar'>
   </div>
 </div>
@@ -35,15 +35,16 @@
   </div>
 </div>
 
-<div id="create_event_dialog" style="display:none;">
+<div id="create_event_dialog" class="reveal-modal medium" data-reveal>
 
 </div>
 
 
 
 <%= content_for :left_panel do %>
-    <div class="menu2">
-      <% if @group %>
+
+    <% if @group %>
+        <div class="mybox">
           <% if (can? :create_both_events, @group) %>
               <%= link_to t('pages.calendar.create_event_button'), '#', onclick: 'return chooseEventType();', class: 'btn blue newButton' %>
           <% elsif can? :create_event, @group %>
@@ -53,26 +54,33 @@
           <% end %>
 
           <%= link_to '<img src="//www.google.com/calendar/images/ext/gc_button6.gif" border=0>'.html_safe, "http://www.google.com/calendar/render?cid=#{group_events_url(@group, format: :ics)}", target: '_blank', style: 'display: table; margin: 25px auto;' %>
-
-      <% else %>
-          <% if is_admin? %>
+        </div>
+    <% else %>
+        <% if is_admin? %>
+            <div class="mybox">
               <%= link_to t('pages.calendar.create_event_button'), '#', onclick: 'return chooseEventType();', class: 'btn blue newButton disable' %>
-          <% end %>
-      <% end %>
-    </div>
+            </div>
+        <% end %>
+    <% end %>
+
 
 
     <div class="choose_event_type" style="display:none;">
-      <% EventType.active.each do |event_type| %>
-          <div class="event_model_option" data-id="<%= event_type.id %>" style="background-color: <%= event_type.color %>">
-            <div class="model_name">
-              <div class="name"><%= event_type.description.upcase %></div>
-              <div class="icon">
-                <%= image_tag"event_types/#{event_type.name.downcase}.png", :align => 'middle', :alt => event_type.description, :title => event_type.description, style: 'width:160px' %>
+      <h2 class="modal_title"><%= t('pages.events.index.choose_type') %></h2>
+
+      <div style="max-width:540px;margin:auto;">
+        <% EventType.active.each do |event_type| %>
+            <div class="event_model_option" data-id="<%= event_type.id %>" style="background-color: <%= event_type.color %>">
+              <div class="model_name">
+                <div class="name"><%= event_type.description.upcase %></div>
+                <div class="icon">
+                  <%= image_tag "event_types/#{event_type.name.downcase}.png", :align => 'middle', :alt => event_type.description, :title => event_type.description, style: 'width:160px' %>
+                </div>
               </div>
             </div>
-          </div>
-      <% end %>
+        <% end %>
+      </div>
+      <a class="close-reveal-modal">&#215;</a>
     </div>
 
 <% end %>
@@ -102,28 +110,24 @@
         });
 
 
-        create_event_.dialog({
-            title: "<%=j t('pages.events.index.choose_type') %>",
-            modal: true,
-            width: 600,
-            height: 'auto',
-            close: function (event, ui) {
-                create_event_.dialog('destroy');
-            }
+        create_event_.foundation('reveal', 'open', {
+            closeOnBackgroundClick: false,
+            closeOnEsc: false
         });
+
         return false;
     }
 
 
     $(function () {
         //$('.calendar_container').height($(window).height());
-        $(window).resize(function() {
-            $('#calendar').fullCalendar('option', 'height', $(window).height() -170);
-        })
+        $(window).resize(function () {
+            $('#calendar').fullCalendar('option', 'height', $(window).height() - 170);
+        });
         $('#calendar').fullCalendar({
             editable: true,
-            height: $(window).height() -170,
-            <%if (@group ? (can? :create_event, @group) : is_admin?) %>
+            height: $(window).height() - 170,
+            <%unless (@group ? (can? :create_event, @group) : is_admin?) %>
             disableDragging: true,
             disableResizing: true,
             <%end%>
@@ -131,15 +135,15 @@
             header: {
                 left: 'today prev,next',
                 center: 'title',
-                right: 'month,agendaWeek,agendaDay'
+                right: 'agendaList,month,agendaWeek,agendaDay'
             },
             defaultView: 'month',
             slotMinutes: 15,
             firstDay: <%=t('calendar.firstDay')%>,
-            monthNames: <%=t('calendar.monthNames')%>,
-            monthNamesShort: <%=t('calendar.monthNamesShort')%>,
-            dayNames: <%=t('calendar.dayNames')%>,
-            dayNamesShort: <%=t('calendar.dayNamesShort')%>,
+            monthNames: <%=raw t('calendar.monthNames')%>,
+            monthNamesShort: <%=raw t('calendar.monthNamesShort')%>,
+            dayNames: <%=raw t('calendar.dayNames')%>,
+            dayNamesShort: <%=raw t('calendar.dayNamesShort')%>,
             buttonText: {
                 prev: "<span class='fc-text-arrow'>&lsaquo;</span>",
                 next: "<span class='fc-text-arrow'>&rsaquo;</span>",
@@ -156,7 +160,7 @@
             events: '<%=list_events_url%>',
             <%end%>
             timeFormat: {
-                month:'<%=t('calendar.timeFormat')%>',
+        	    month:'<%=t('calendar.timeFormat')%>',
                 week:'',
                 agenda:''
             },
@@ -164,13 +168,13 @@
                         month: 'ddd',
                         week: 'ddd M/d',
                         day: 'dddd M/d'
-                    },
-                    titleFormat: {                                          //TODO:I18n
-                        month: 'MMMM yyyy',
-                        week: "MMM d[ yyyy]{ '&#8212;'[ MMM] d yyyy}",
-                        day: 'dddd, MMM d, yyyy'
-                    },
-                    axisFormat: 'H:mm',
+            },
+            titleFormat: {                                          //TODO:I18n
+                month: 'MMMM yyyy',
+                week: "MMM d[ yyyy]{ '&#8212;'[ MMM] d yyyy}",
+                day: 'dddd, MMM d, yyyy'
+            },
+           	axisFormat: 'H:mm',
             dragOpacity: "0.5",
             eventDrop: function (event, dayDelta, minuteDelta, allDay, revertFunc) {
                 moveEvent(event, dayDelta, minuteDelta, allDay);
@@ -189,7 +193,7 @@
                     element.css('cursor', 'pointer');
                 }
             },
-            dayClick: function(date, allDay, jsEvent, view) {
+            dayClick: function (date, allDay, jsEvent, view) {
                 <%if (@group ? (can? :create_event, @group) : is_admin?) %>
                 $.ajax({
                     data: 'starttime=' + date.getTime(),

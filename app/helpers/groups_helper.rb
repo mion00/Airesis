@@ -267,13 +267,13 @@ module GroupsHelper
         super
   end
 
-  def new_group_quorum_url(group, options={})
+  def new_group_best_quorum_url(group, options={})
     (group_in_subdomain? group) ?
         new_quorum_url(options) :
         super
   end
 
-  def edit_group_quorum_url(group, options={})
+  def edit_group_best_quorum_url(group, options={})
     (group_in_subdomain? group) ?
         edit_quorum_url(options) :
         super
@@ -295,6 +295,14 @@ module GroupsHelper
   #def group_forums_url(group,option={})
   #  forums_url
   #end
+
+
+  #todo to be moved as soon as possible
+  def check_alert_alert_url(alert,options={})
+    subdomain = alert.notification.data[:subdomain]
+    options[:subdomain] = subdomain if subdomain.to_s != ''
+    super
+  end
 
 
   #forum
