@@ -1,4 +1,7 @@
 it-IT:
   routes:
+    partecipa: "partecipa"
+    story: "storia"
+    chisiamo: "chisiamo"
     proposals: "proposte"
     groups: "gruppi"

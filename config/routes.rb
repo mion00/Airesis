@@ -7,14 +7,19 @@ Airesis::Application.routes.draw do
   mount Ckeditor::Engine => '/ckeditor'
 
   match 'home', :to => 'home#show'
-  match '/partecipa' => 'home#engage'
-  match '/chisiamo' => 'home#whowe'
+  get '/edemocracy', to: redirect('/e-democracy')
+  localized do
+    match '/partecipa' => 'home#engage'
+    match '/chisiamo' => 'home#whowe'
+  end
   match '/roadmap' => 'home#roadmap'
   match '/bugtracking' => 'home#bugtracking'
   match '/videoguide' => 'home#videoguide'
-  match '/edemocracy' => 'home#whatis'
+  match '/e-democracy' => 'home#whatis'
   match '/eparticipation' => 'home#intro'
-  match '/story' => 'home#story'
+  localized do
+    match '/story' => 'home#story'
+  end
   match '/sostienici' => 'home#helpus'
   match '/donations' => 'home#donations'
   match '/press' => 'home#press'
