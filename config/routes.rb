@@ -19,8 +19,8 @@ Airesis::Application.routes.draw do
   match '/eparticipation' => 'home#intro'
   localized do
     match '/story' => 'home#story'
+    match '/sostienici' => 'home#helpus'
   end
-  match '/sostienici' => 'home#helpus'
   match '/donations' => 'home#donations'
   match '/press' => 'home#press'
   match '/privacy' => 'home#privacy'

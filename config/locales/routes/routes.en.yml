@@ -1,7 +1,8 @@
 en:
   routes:
-    partecipa: "partecipate"
+    partecipa: "participate"
     story: "story"
     chisiamo: "aboutus"
     proposals: "proposals"
     groups: "groups"
+    sostienici: "helpus"

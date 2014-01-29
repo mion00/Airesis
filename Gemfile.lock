@@ -40,6 +40,12 @@ GIT
   specs:
     vote-schulze (0.2.0)
 
+GIT
+  remote: https://github.com/mruokojo/route_translator.git
+  revision: 0581c29d2f513a35a334225a207cc57eacc99efd
+  specs:
+    route_translator (3.1.0)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -305,7 +311,6 @@ GEM
     rest-client (1.6.7)
       mime-types (>= 1.16)
     rotp (1.4.1)
-    route_translator (3.1.0)
     rsolr (1.0.8)
       builder (>= 2.1.2)
     ruby-openid (2.2.2)
@@ -433,7 +438,7 @@ DEPENDENCIES
   resque-scheduler
   resque_mailer
   rotp
-  route_translator
+  route_translator!
   ruby-prof
   rubyzip
   sanitize

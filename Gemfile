@@ -132,4 +132,4 @@ gem 'activerecord-postgres-array'
 gem 'crowdin-api'
 gem 'rubyzip'
 
-gem 'route_translator'
+gem 'route_translator', :git =>  "https://github.com/mruokojo/route_translator.git"
