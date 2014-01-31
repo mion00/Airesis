@@ -41,6 +41,7 @@
 //= require jquery.switchbutton
 //= require introjs.min
 //= require select2
+//= require ckeditor/override
 //= require ckeditor/init
 //= require underscore
 //= require jquery.textntags
@@ -48,3 +49,6 @@
 //= require foundation
 //= require list
 //= require diff_match_patch
+//= require jquery.appear
+
+$(function(){ $(document).foundation(); });

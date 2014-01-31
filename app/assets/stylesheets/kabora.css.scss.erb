@@ -1,5 +1,5 @@
-$small-screen: 768px;
-$medium-screen: 1280px;
+$small-screen: 640px;
+$medium-screen: 1024px;
 $large-screen: 1440px;
 
 #main {
@@ -13,7 +13,7 @@ $large-screen: 1440px;
 
 #main-copy {
     position: relative;
-    background-color: rgba(0,0,0,0.1);
+    background-color: rgba(0, 0, 0, 0.1);
     padding-right: 20px;
     min-height: 100%;
 
@@ -37,7 +37,7 @@ $large-screen: 1440px;
 
 #menu-left {
     float: left;
-    width: 280px;
+    width: 250px;
     padding-top: 15px;
     display: none;
     padding-top: 95px;
@@ -131,7 +131,8 @@ $large-screen: 1440px;
 }
 
 .logo1 {
-    height: 100%;
+    margin-left: 5px;
+    margin-top: 5px;
 }
 
 #menu-top .sep1 {
@@ -388,6 +389,7 @@ $large-screen: 1440px;
     #menu-right .mybox {
         box-shadow: none;
         background-color: transparent;
+        border: none;
     }
 }
 
@@ -436,11 +438,11 @@ $large-screen: 1440px;
         border-radius: 28px;
 
         &.triangle {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border: none;
             position: absolute;
-            top: 25px;
+            top: 14px;
             margin-left: 4px;
             &:hover {
                 box-shadow: none;
@@ -528,12 +530,10 @@ $large-screen: 1440px;
     margin-bottom: 10px;
 }
 
-.qtip-avatar {
+.qtip.qtip-avatar {
     width: auto;
-    padding: 0px;
+    max-width: 600px;
     margin-top: 10px;
-    border-radius: 5px;
-    border: 1px solid #000;
     padding: 5px;
     padding-left: 10px;
     padding-right: 10px;
@@ -725,14 +725,8 @@ $large-screen: 1440px;
 
 .mybox {
     padding: 10px;
-    padding-bottom: 5px;
-    background-color: #fff;
-    box-shadow: 0px 0px 1px #000;
-    border-radius: 2px;
-    margin: 0px;
     margin-bottom: 10px;
     font-size: 0.9em;
-    color: #333;
     position: relative;
 
     &.socialnetwork {
@@ -828,7 +822,6 @@ $large-screen: 1440px;
 }
 
 #footer, footer {
-    position: absolute;
     bottom: 0px;
     right: 0px;
     left: 0px;
@@ -838,6 +831,11 @@ $large-screen: 1440px;
     box-shadow: 0px -1px 1px #333;
     font-size: 0.9em;
     z-index: 998;
+    @media only screen and (max-width: 64em) {
+        text-align: center;
+        font-size: 1.5em;
+        line-height: 1.5em;
+    }
     a {
         color: white;
         text-decoration: none;
@@ -847,12 +845,16 @@ $large-screen: 1440px;
         }
     }
     .language.footer {
-        max-width: 7%;
+        max-width: 30%;
+        @media only screen and (max-width: 40.063em) {
+            max-width: 50%;
+        }
     }
 }
 
 #language {
     a {
+        text-align: center;
         font-size: 1.5em;
         line-height: 1.5em;
     }
@@ -910,10 +912,17 @@ $large-screen: 1440px;
     $BUTTON
 \*------------------------------------*/
 
-#menu-left .btn {
-    display: table;
-    margin: 5px auto;
-
+#menu-left {
+    .btn {
+        display: table;
+        margin: 5px auto;
+        width: 90%;
+        text-align: center;
+        &.little {
+            width: 40%;
+            margin-right:10px;
+        }
+    }
 }
 
 .btn {
@@ -1194,7 +1203,6 @@ $large-screen: 1440px;
     }
 }
 
-
 @media (max-width: 999px) {
     #menu-top {
         position: absolute;
@@ -1215,8 +1223,6 @@ $large-screen: 1440px;
     z-index: 1 !important;
     position: absolute;
 }
-
-
 
 @media (max-width: '768px') {
 
