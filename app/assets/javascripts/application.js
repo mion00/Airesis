@@ -50,5 +50,8 @@
 //= require list
 //= require diff_match_patch
 //= require jquery.appear
+//= require picker
+//= require picker.time
+//= require picker.date
 
 $(function(){ $(document).foundation(); });

@@ -52,7 +52,7 @@
         <div class="row">
           <div class="large-6 columns">
             <%= f.label :starttime %>
-            <%= f.text_field :starttime, :value => (l(@event.starttime, format: :textfield)), class: 'datePicker' %>
+            <%= f.text_field :starttime, value: '', class: 'datePicker', :"data-value" => Date.current.to_s %>
           </div>
         </div>
 

@@ -37,4 +37,7 @@
  *= require frm
  *= require jquery.textntags
  *= require foundation_and_overrides
+ *= require classic
+ *= require classic.date
+ *= require classic.time
 */

@@ -513,12 +513,10 @@ var datePickerOptions = {
 
 function disegnaDatePicker() {
     //data inizio evento
-    $('#event_starttime').datetimepicker($.extend({}, datePickerOptions, {
-        onClose: function (date) {
-            calculate_event_times();
-            startTimeChanged();
-        }
-    }));
+    $('#event_starttime').pickadate({
+        formatSubmit: 'yyyy/mm/dd',
+        min: true
+    });
 
     //data termine evento
     $("#event_endtime").datetimepicker($.extend({}, datePickerOptions, {
