@@ -1,3 +1,12 @@
+base_locale: en
+locales: [it-IT,fr]
+
 data:
+  # file_system is the default adapter, you can provide a custom class name here:
+  adapter: file_system
+  # a list of file globs to read from per-locale
   read:
+    # default:
+    - 'config/locales/%{locale}.yml'
+    # to also read from namespaced files, e.g. simple_form.en.yml:
     - 'config/locales/*/*.%{locale}.yml'
