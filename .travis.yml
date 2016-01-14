@@ -11,7 +11,7 @@ before_script:
  - bundle exec rake db:setup
  - bundle exec sidekiq -d -L /tmp/sidekiq.log
  - sleep 3
-script: xfvb-run bundle exec rspec --tag ~ci_ignore
+script: xvfb-run bundle exec rspec --tag ~ci_ignore
 after_failure:
  - cat log/test.log
 services:
